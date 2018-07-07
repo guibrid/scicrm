@@ -85,154 +85,122 @@ class ProductsTable extends Table
         $validator
             ->scalar('code')
             ->maxLength('code', 50)
-            ->requirePresence('code', 'create')
-            ->notEmpty('code');
+            ->allowEmpty('code');
 
         $validator
             ->scalar('remplacement_product')
             ->maxLength('remplacement_product', 255)
-            ->requirePresence('remplacement_product', 'create')
-            ->notEmpty('remplacement_product');
+            ->allowEmpty('remplacement_product');
 
         $validator
             ->scalar('title')
             ->maxLength('title', 255)
-            ->requirePresence('title', 'create')
-            ->notEmpty('title');
+            ->allowEmpty('title');
 
         $validator
             ->integer('pcb')
-            ->requirePresence('pcb', 'create')
-            ->notEmpty('pcb');
+            ->allowEmpty('pcb');
 
         $validator
             ->numeric('prix')
-            ->requirePresence('prix', 'create')
-            ->notEmpty('prix');
+            ->allowEmpty('prix');
 
         $validator
             ->scalar('uv')
             ->maxLength('uv', 255)
-            ->requirePresence('uv', 'create')
-            ->notEmpty('uv');
+            ->allowEmpty('uv');
 
         $validator
             ->numeric('poids')
-            ->requirePresence('poids', 'create')
-            ->notEmpty('poids');
+            ->allowEmpty('poids');
 
         $validator
             ->numeric('volume')
-            ->requirePresence('volume', 'create')
-            ->notEmpty('volume');
+            ->allowEmpty('volume');
 
         $validator
-            ->date('dlv')
-            ->requirePresence('dlv', 'create')
-            ->notEmpty('dlv');
+            ->scalar('dlv')
+            ->allowEmpty('dlv');
 
         $validator
             ->scalar('duree_vie')
             ->maxLength('duree_vie', 255)
-            ->requirePresence('duree_vie', 'create')
-            ->notEmpty('duree_vie');
+            ->allowEmpty('duree_vie');
 
         $validator
             ->scalar('gencod')
             ->maxLength('gencod', 255)
-            ->requirePresence('gencod', 'create')
-            ->notEmpty('gencod');
+            ->allowEmpty('gencod');
 
         $validator
             ->scalar('douanier')
             ->maxLength('douanier', 255)
-            ->requirePresence('douanier', 'create')
-            ->notEmpty('douanier');
+            ->allowEmpty('douanier');
 
         $validator
             ->scalar('dangereux')
             ->maxLength('dangereux', 255)
-            ->requirePresence('dangereux', 'create')
-            ->notEmpty('dangereux');
+            ->allowEmpty('dangereux');
 
         $validator
-            ->numeric('tva')
-            ->requirePresence('tva', 'create')
-            ->notEmpty('tva');
+            ->scalar('tva')
+            ->allowEmpty('tva');
 
         $validator
             ->scalar('cdref')
             ->maxLength('cdref', 255)
-            ->requirePresence('cdref', 'create')
-            ->notEmpty('cdref');
+            ->allowEmpty('cdref');
 
         $validator
             ->scalar('category_code')
             ->maxLength('category_code', 255)
-            ->requirePresence('category_code', 'create')
-            ->notEmpty('category_code');
+            ->allowEmpty('category_code');
 
         $validator
             ->scalar('subcategory_code')
             ->maxLength('subcategory_code', 255)
-            ->requirePresence('subcategory_code', 'create')
-            ->notEmpty('subcategory_code');
+            ->allowEmpty('subcategory_code');
 
         $validator
             ->scalar('entrepot')
             ->maxLength('entrepot', 255)
-            ->requirePresence('entrepot', 'create')
-            ->notEmpty('entrepot');
+            ->allowEmpty('entrepot');
 
         $validator
             ->scalar('supplier')
             ->maxLength('supplier', 255)
-            ->requirePresence('supplier', 'create')
-            ->notEmpty('supplier');
+            ->allowEmpty('supplier');
 
         $validator
             ->scalar('qualification')
             ->maxLength('qualification', 255)
-            ->requirePresence('qualification', 'create')
-            ->notEmpty('qualification');
+            ->allowEmpty('qualification');
 
         $validator
             ->integer('couche_palette')
-            ->requirePresence('couche_palette', 'create')
-            ->notEmpty('couche_palette');
+            ->allowEmpty('couche_palette');
 
         $validator
             ->integer('colis_palette')
-            ->requirePresence('colis_palette', 'create')
-            ->notEmpty('colis_palette');
+            ->allowEmpty('colis_palette');
 
         $validator
             ->scalar('pieceartk')
             ->maxLength('pieceartk', 255)
-            ->requirePresence('pieceartk', 'create')
-            ->notEmpty('pieceartk');
+            ->allowEmpty('pieceartk');
 
         $validator
             ->scalar('ifls_remplacement')
             ->maxLength('ifls_remplacement', 255)
-            ->requirePresence('ifls_remplacement', 'create')
-            ->notEmpty('ifls_remplacement');
+            ->allowEmpty('ifls_remplacement');
 
         $validator
             ->integer('assortiment')
-            ->requirePresence('assortiment', 'create')
-            ->notEmpty('assortiment');
-
-        $validator
-            ->scalar('temperature')
-            ->maxLength('temperature', 255)
-            ->requirePresence('temperature', 'create')
-            ->notEmpty('temperature');
+            ->allowEmpty('assortiment');
 
         $validator
             ->boolean('active')
-            ->requirePresence('active', 'create')
-            ->notEmpty('active');
+            ->allowEmpty('active');
 
         return $validator;
     }

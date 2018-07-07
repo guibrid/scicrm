@@ -2,7 +2,8 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
-
+use Box\Spout\Reader\ReaderFactory;
+use Box\Spout\Common\Type;
 /**
  * Products Controller
  *
@@ -12,6 +13,50 @@ use App\Controller\AppController;
  */
 class ProductsController extends AppController
 {
+
+  private $headers = ['code',
+            'remplacement_product',
+            'title',
+            'pcb',
+            'prix',
+            'uv',
+            'poids',
+            'volume',
+            'dlv',
+            'duree_vie',
+            'gencod',
+            'douanier',
+            'dangereux',
+            'origin_id',
+            'tva',
+            'cdref',
+            'category_code',
+            'subcategory_code',
+            'entrepot',
+            'supplier',
+            'qualification',
+            'couche_palette',
+            'colis_palette',
+            'pieceartk',
+            'ifls_remplacement',
+            'assortiment',
+            'brand_id'];
+
+  /**
+   * Initialization hook method.
+   *
+   * Use this method to add common initialization code like loading components.
+   *
+   *
+   * @return void
+   */
+    public function initialize()
+    {
+        parent::initialize();
+
+    }
+
+
 
     /**
      * Index method
@@ -116,5 +161,74 @@ class ProductsController extends AppController
         }
 
         return $this->redirect(['action' => 'index']);
+    }
+
+    /**
+     * updateBase method
+     *
+     */
+    public function updateBase()
+    {
+
+        //$product = $this->Products->newEntity();
+        $reader = ReaderFactory::create(Type::CSV); // for CSV files
+        $reader->setFieldDelimiter('|');
+        $reader->open('files/test7.csv');
+
+        $i = 0;
+        foreach ($reader->getSheetIterator() as $sheet) {
+
+          foreach ($sheet->getRowIterator() as $productRow) {
+              if ($i < 279 AND $i >1) {
+
+
+                //Si le code article existe dans la table products on l'ajoute dans array $updateProductList. C'est la liste des articles à update
+                //$updateProductList[] = $this->renameHeaderArray($productRow);
+
+                // si le code n'existe pas dans la table products on l'ajoute dans array $insertProductList. C'est la liste des nouveaux articles à ajouter à la base
+                $insertProductList[] = $this->renameHeaderArray($productRow);
+
+              }
+              $i++;
+          }
+
+        }
+
+            $this->insertProductList($insertProductList);
+            //$this->updateProductList($updateProductList);
+
+        $reader->close();
+
+
+    echo "Peak memory:", (memory_get_peak_usage(true) / 1024 / 1024), " MB";
+
+    }
+
+    /**
+     * updateBase method
+     *
+     */
+    private function renameHeaderArray($array)
+    {
+      $renamedKeyArray = [];
+      foreach($array as $key => $value) {
+        $renamedKeyArray[$this->headers[$key]] = $value;
+      }
+      return $renamedKeyArray;
+    }
+
+    /**
+     * updateBase method
+     *
+     */
+    private function insertProductList($array)
+    {
+      $product = $this->Products->newEntity();
+      $product = $this->Products->patchEntities($product, $array);
+      if ($this->Products->saveMany($product)) {
+          $this->Flash->success(__('The product has been saved.'));
+      } else {
+          Debug($product->errors());
+      }
     }
 }

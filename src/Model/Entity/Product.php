@@ -85,7 +85,6 @@ class Product extends Entity
         'ifls_remplacement' => true,
         'assortiment' => true,
         'brand_id' => true,
-        'temperature' => true,
         'active' => true,
         'created' => true,
         'modified' => true,

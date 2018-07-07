@@ -16,9 +16,7 @@ class WarningsControllerTest extends IntegrationTestCase
      * @var array
      */
     public $fixtures = [
-        'app.warnings',
-        'app.products',
-        'app.products_warnings'
+        'app.warnings'
     ];
 
     /**

@@ -19,10 +19,8 @@ class ProductsControllerTest extends IntegrationTestCase
         'app.products',
         'app.origins',
         'app.brands',
-        'app.warnings',
         'app.shortbrands',
         'app.shortorigins',
-        'app.products_warnings',
         'app.shortbrands_products',
         'app.shortorigins_products'
     ];

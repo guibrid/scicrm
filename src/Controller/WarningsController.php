@@ -35,7 +35,7 @@ class WarningsController extends AppController
     public function view($id = null)
     {
         $warning = $this->Warnings->get($id, [
-            'contain' => ['Products']
+            'contain' => []
         ]);
 
         $this->set('warning', $warning);
@@ -58,8 +58,7 @@ class WarningsController extends AppController
             }
             $this->Flash->error(__('The warning could not be saved. Please, try again.'));
         }
-        $products = $this->Warnings->Products->find('list', ['limit' => 200]);
-        $this->set(compact('warning', 'products'));
+        $this->set(compact('warning'));
     }
 
     /**
@@ -72,7 +71,7 @@ class WarningsController extends AppController
     public function edit($id = null)
     {
         $warning = $this->Warnings->get($id, [
-            'contain' => ['Products']
+            'contain' => []
         ]);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $warning = $this->Warnings->patchEntity($warning, $this->request->getData());
@@ -83,8 +82,7 @@ class WarningsController extends AppController
             }
             $this->Flash->error(__('The warning could not be saved. Please, try again.'));
         }
-        $products = $this->Warnings->Products->find('list', ['limit' => 200]);
-        $this->set(compact('warning', 'products'));
+        $this->set(compact('warning'));
     }
 
     /**

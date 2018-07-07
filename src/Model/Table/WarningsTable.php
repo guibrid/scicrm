@@ -9,8 +9,6 @@ use Cake\Validation\Validator;
 /**
  * Warnings Model
  *
- * @property \App\Model\Table\ProductsTable|\Cake\ORM\Association\BelongsToMany $Products
- *
  * @method \App\Model\Entity\Warning get($primaryKey, $options = [])
  * @method \App\Model\Entity\Warning newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Warning[] newEntities(array $data, array $options = [])
@@ -40,12 +38,6 @@ class WarningsTable extends Table
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
-
-        $this->belongsToMany('Products', [
-            'foreignKey' => 'warning_id',
-            'targetForeignKey' => 'product_code',
-            'joinTable' => 'products_warnings'
-        ]);
     }
 
     /**
@@ -65,6 +57,18 @@ class WarningsTable extends Table
             ->maxLength('title', 255)
             ->requirePresence('title', 'create')
             ->notEmpty('title');
+
+        $validator
+            ->scalar('product_code')
+            ->maxLength('product_code', 255)
+            ->requirePresence('product_code', 'create')
+            ->notEmpty('product_code');
+
+        $validator
+            ->scalar('value')
+            ->maxLength('value', 255)
+            ->requirePresence('value', 'create')
+            ->notEmpty('value');
 
         $validator
             ->integer('urgence')

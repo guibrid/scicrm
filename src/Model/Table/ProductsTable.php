@@ -13,7 +13,6 @@ use ArrayObject;
  *
  * @property \App\Model\Table\OriginsTable|\Cake\ORM\Association\BelongsTo $Origins
  * @property \App\Model\Table\BrandsTable|\Cake\ORM\Association\BelongsTo $Brands
- * @property \App\Model\Table\WarningsTable|\Cake\ORM\Association\BelongsToMany $Warnings
  * @property \App\Model\Table\ShortbrandsTable|\Cake\ORM\Association\BelongsToMany $Shortbrands
  * @property \App\Model\Table\ShortoriginsTable|\Cake\ORM\Association\BelongsToMany $Shortorigins
  *
@@ -49,16 +48,12 @@ class ProductsTable extends Table
 
         $this->belongsTo('Origins', [
             'foreignKey' => 'origin_id',
-            'joinType' => 'INNER'
+            //'joinType' => 'INNER'
         ]);
         $this->belongsTo('Brands', [
             'foreignKey' => 'brand_id',
-            'joinType' => 'INNER'
-        ]);
-        $this->belongsToMany('Warnings', [
-            'foreignKey' => 'product_code',
-            'targetForeignKey' => 'warning_id',
-            'joinTable' => 'products_warnings'
+            //'joinType' => 'INNER'
+
         ]);
         $this->belongsToMany('Shortbrands', [
             'foreignKey' => 'product_id',
@@ -108,7 +103,6 @@ class ProductsTable extends Table
     public function validationDefault(Validator $validator)
     {
 
-
         $validator
             ->add('tva', 'validDouble', [
                   'rule' => 'isvalidDouble',
@@ -118,7 +112,6 @@ class ProductsTable extends Table
         $validator
             ->integer('id')
             ->allowEmpty('id', 'create');
-
 
         $validator
             ->scalar('code')
@@ -158,6 +151,7 @@ class ProductsTable extends Table
 
         $validator
             ->scalar('dlv')
+            ->maxLength('dlv', 255)
             ->allowEmpty('dlv');
 
         $validator
@@ -182,6 +176,7 @@ class ProductsTable extends Table
 
         $validator
             ->scalar('tva')
+            ->maxLength('tva', 255)
             ->allowEmpty('tva');
 
         $validator
@@ -238,7 +233,7 @@ class ProductsTable extends Table
 
         $validator
             ->boolean('active')
-            ->allowEmpty('active');
+            ->notEmpty('active');
 
         return $validator;
     }

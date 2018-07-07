@@ -8,6 +8,8 @@ use Cake\ORM\Entity;
  *
  * @property int $id
  * @property string $title
+ * @property string $product_code
+ * @property string $value
  * @property int $urgence
  * @property \Cake\I18n\FrozenTime $created
  * @property \Cake\I18n\FrozenTime $modified
@@ -28,6 +30,8 @@ class Warning extends Entity
      */
     protected $_accessible = [
         'title' => true,
+        'product_code' => true,
+        'value' => true,
         'urgence' => true,
         'created' => true,
         'modified' => true,

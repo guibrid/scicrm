@@ -15,13 +15,13 @@ use Cake\ORM\Entity;
  * @property string $uv
  * @property float $poids
  * @property float $volume
- * @property \Cake\I18n\FrozenDate $dlv
+ * @property string $dlv
  * @property string $duree_vie
  * @property string $gencod
  * @property string $douanier
  * @property string $dangereux
  * @property string $origin_id
- * @property float $tva
+ * @property string $tva
  * @property string $cdref
  * @property string $category_code
  * @property string $subcategory_code
@@ -34,7 +34,6 @@ use Cake\ORM\Entity;
  * @property string $ifls_remplacement
  * @property int $assortiment
  * @property string $brand_id
- * @property string $temperature
  * @property bool $active
  * @property \Cake\I18n\FrozenTime $created
  * @property \Cake\I18n\FrozenTime $modified

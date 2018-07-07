@@ -4,6 +4,7 @@ namespace App\Controller;
 use App\Controller\AppController;
 use Box\Spout\Reader\ReaderFactory;
 use Box\Spout\Common\Type;
+
 /**
  * Products Controller
  *
@@ -41,23 +42,6 @@ class ProductsController extends AppController
             'ifls_remplacement',
             'assortiment',
             'brand_id'];
-
-  /**
-   * Initialization hook method.
-   *
-   * Use this method to add common initialization code like loading components.
-   *
-   *
-   * @return void
-   */
-    public function initialize()
-    {
-        parent::initialize();
-
-    }
-
-
-
     /**
      * Index method
      *
@@ -83,7 +67,7 @@ class ProductsController extends AppController
     public function view($id = null)
     {
         $product = $this->Products->get($id, [
-            'contain' => ['Origins', 'Brands', 'Warnings', 'Shortbrands', 'Shortorigins']
+            'contain' => ['Origins', 'Brands', 'Shortbrands', 'Shortorigins']
         ]);
 
         $this->set('product', $product);
@@ -108,10 +92,9 @@ class ProductsController extends AppController
         }
         $origins = $this->Products->Origins->find('list', ['limit' => 200]);
         $brands = $this->Products->Brands->find('list', ['limit' => 200]);
-        $warnings = $this->Products->Warnings->find('list', ['limit' => 200]);
         $shortbrands = $this->Products->Shortbrands->find('list', ['limit' => 200]);
         $shortorigins = $this->Products->Shortorigins->find('list', ['limit' => 200]);
-        $this->set(compact('product', 'origins', 'brands', 'warnings', 'shortbrands', 'shortorigins'));
+        $this->set(compact('product', 'origins', 'brands', 'shortbrands', 'shortorigins'));
     }
 
     /**
@@ -124,7 +107,7 @@ class ProductsController extends AppController
     public function edit($id = null)
     {
         $product = $this->Products->get($id, [
-            'contain' => ['Warnings', 'Shortbrands', 'Shortorigins']
+            'contain' => ['Shortbrands', 'Shortorigins']
         ]);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $product = $this->Products->patchEntity($product, $this->request->getData());
@@ -137,10 +120,9 @@ class ProductsController extends AppController
         }
         $origins = $this->Products->Origins->find('list', ['limit' => 200]);
         $brands = $this->Products->Brands->find('list', ['limit' => 200]);
-        $warnings = $this->Products->Warnings->find('list', ['limit' => 200]);
         $shortbrands = $this->Products->Shortbrands->find('list', ['limit' => 200]);
         $shortorigins = $this->Products->Shortorigins->find('list', ['limit' => 200]);
-        $this->set(compact('product', 'origins', 'brands', 'warnings', 'shortbrands', 'shortorigins'));
+        $this->set(compact('product', 'origins', 'brands', 'shortbrands', 'shortorigins'));
     }
 
     /**
@@ -233,5 +215,4 @@ class ProductsController extends AppController
           Debug($product->errors());
       }
     }
-
 }

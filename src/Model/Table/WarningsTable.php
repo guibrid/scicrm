@@ -43,7 +43,7 @@ class WarningsTable extends Table
 
         $this->belongsToMany('Products', [
             'foreignKey' => 'warning_id',
-            'targetForeignKey' => 'product_id',
+            'targetForeignKey' => 'product_code',
             'joinTable' => 'products_warnings'
         ]);
     }

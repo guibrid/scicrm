@@ -43,7 +43,7 @@ class ProductsWarningsTable extends Table
         $this->addBehavior('Timestamp');
 
         $this->belongsTo('Products', [
-            'foreignKey' => 'product_id',
+            'foreignKey' => 'product_code',
             'joinType' => 'INNER'
         ]);
         $this->belongsTo('Warnings', [
@@ -76,7 +76,7 @@ class ProductsWarningsTable extends Table
      */
     public function buildRules(RulesChecker $rules)
     {
-        $rules->add($rules->existsIn(['product_id'], 'Products'));
+        $rules->add($rules->existsIn(['product_code'], 'Products'));
         $rules->add($rules->existsIn(['warning_id'], 'Warnings'));
 
         return $rules;

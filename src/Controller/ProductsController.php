@@ -218,7 +218,9 @@ class ProductsController extends AppController
     }
 
     /**
-     * updateBase method
+     * insertProductList method
+     *
+     * Insert dans la table produit un liste de insertProductList
      *
      */
     private function insertProductList($array)
@@ -231,4 +233,5 @@ class ProductsController extends AppController
           Debug($product->errors());
       }
     }
+
 }

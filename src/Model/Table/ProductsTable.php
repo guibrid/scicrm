@@ -5,6 +5,8 @@ use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Cake\Event\Event;
+use ArrayObject;
 
 /**
  * Products Model
@@ -54,7 +56,7 @@ class ProductsTable extends Table
             'joinType' => 'INNER'
         ]);
         $this->belongsToMany('Warnings', [
-            'foreignKey' => 'product_id',
+            'foreignKey' => 'product_code',
             'targetForeignKey' => 'warning_id',
             'joinTable' => 'products_warnings'
         ]);
@@ -70,6 +72,33 @@ class ProductsTable extends Table
         ]);
     }
 
+    // Dans une classe table ou behavior
+    public function beforeMarshal(Event $event, ArrayObject $data, ArrayObject $options)
+    {
+        //On format la valeur TVA pour la mettre au format numeric et double
+        $data['tva'] = str_replace(",", ".", $data['tva']);
+        if (is_numeric(($data['tva']))) {
+          $data['tva'] = (float)$data['tva'];
+          //debug( $data['tva'].'-'.gettype($data['tva']));
+          //die;
+        }
+
+    }
+
+
+
+    public function isvalidDouble($value, array $context)
+    {
+      if (is_double($value)) {
+        return true;
+      } else {
+        // Ajouter dans la table warning, un enregistrement avec le product_code, le title, la value, urgence
+        //debug($context);
+        //die;
+      }
+
+    }
+
     /**
      * Default validation rules.
      *
@@ -78,9 +107,18 @@ class ProductsTable extends Table
      */
     public function validationDefault(Validator $validator)
     {
+
+
+        $validator
+            ->add('tva', 'validDouble', [
+                  'rule' => 'isvalidDouble',
+                  'message' => 'TVA is not a valid double',
+                  'provider' => 'table']);
+
         $validator
             ->integer('id')
             ->allowEmpty('id', 'create');
+
 
         $validator
             ->scalar('code')

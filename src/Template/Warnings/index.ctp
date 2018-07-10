@@ -8,8 +8,6 @@
     <ul class="side-nav">
         <li class="heading"><?= __('Actions') ?></li>
         <li><?= $this->Html->link(__('New Warning'), ['action' => 'add']) ?></li>
-        <li><?= $this->Html->link(__('List Products'), ['controller' => 'Products', 'action' => 'index']) ?></li>
-        <li><?= $this->Html->link(__('New Product'), ['controller' => 'Products', 'action' => 'add']) ?></li>
     </ul>
 </nav>
 <div class="warnings index large-9 medium-8 columns content">
@@ -19,6 +17,9 @@
             <tr>
                 <th scope="col"><?= $this->Paginator->sort('id') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('title') ?></th>
+                <th scope="col"><?= $this->Paginator->sort('product_code') ?></th>
+                <th scope="col"><?= $this->Paginator->sort('field') ?></th>
+                <th scope="col"><?= $this->Paginator->sort('value') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('urgence') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('created') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('modified') ?></th>
@@ -30,6 +31,9 @@
             <tr>
                 <td><?= $this->Number->format($warning->id) ?></td>
                 <td><?= h($warning->title) ?></td>
+                <td><?= h($warning->product_code) ?></td>
+                <td><?= h($warning->field) ?></td>
+                <td><?= h($warning->value) ?></td>
                 <td><?= $this->Number->format($warning->urgence) ?></td>
                 <td><?= h($warning->created) ?></td>
                 <td><?= h($warning->modified) ?></td>

@@ -24,8 +24,7 @@ class WarningsTableTest extends TestCase
      * @var array
      */
     public $fixtures = [
-        'app.warnings',
-        'app.products'
+        'app.warnings'
     ];
 
     /**

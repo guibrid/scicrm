@@ -7,6 +7,8 @@ use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use Cake\Event\Event;
 use ArrayObject;
+use App\Utility\FieldCheck;
+use Cake\Datasource\EntityInterface;
 
 /**
  * Products Model
@@ -27,6 +29,7 @@ use ArrayObject;
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
+
 class ProductsTable extends Table
 {
 
@@ -70,29 +73,197 @@ class ProductsTable extends Table
     // Dans une classe table ou behavior
     public function beforeMarshal(Event $event, ArrayObject $data, ArrayObject $options)
     {
-        //On format la valeur TVA pour la mettre au format numeric et double
-        $data['tva'] = str_replace(",", ".", $data['tva']);
-        if (is_numeric(($data['tva']))) {
-          $data['tva'] = (float)$data['tva'];
-          //debug( $data['tva'].'-'.gettype($data['tva']));
-          //die;
-        }
 
-    }
+      $fieldCheck = new FieldCheck;
+
+      foreach($data as $key => $row) {
+        switch ($key) {
+
+          case 'code': // alphanumeric, no empty
+            $fieldCheck->isalphaNum($key, $row, $data['code']); // Check si alphnumerique
+            $fieldCheck->isVide($key, $row, $data['code']); // Check si empty
+            //On ne met pas le code à null car il est insere dans la table warning
+            break;
+
+          case 'remplacement_product': // alphanumeric, empty
+            if (!$fieldCheck->isalphaNum($key, $row, $data['code'])) {  // Check si alphnumerique
+              $data['remplacement_product'] = null; //On met la value à null si la fonction renvoie false
+            };
+            break;
+
+          case 'pcb': // entier,  no empty
+            if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->isVide($key, $row, $data['code'])) {
+              // Check si entier ou vide
+              $data['pcb'] = null; //On met la value à null si la fonction renvoie false
+            };
+            break;
+
+          case 'prix': // double ou vide
+            $data['prix'] = str_replace(",", ".", $data['prix']); // On remplace la virgule par un point
+            if (!$fieldCheck->isDouble($key, $data['prix'] , $data['code'])) {  // Check si c'est un double
+              $data['prix'] = null; //On met la value à null si la fonction renvoie false
+            };
+            break;
+
+          case 'uv': // U ou K, no empty
+          $data['uv'] = strtoupper($data['uv']);
+          if (!$fieldCheck->matchString($key, $data['uv'], $data['code'], ['U','K']) || !$fieldCheck->isVide($key, $data['uv'], $data['code'])) {
+            // Check si correspond aux options ou vide
+            $data['uv'] = null; //On met la value à null si la fonction renvoie false
+          };
+          break;
+
+          case 'poids': // double, no empty
+            $data['poids'] = str_replace(",", ".", $data['poids']); // On remplace la virgule par un point
+            if (!$fieldCheck->isDouble($key, $data['poids'] , $data['code']) || !$fieldCheck->isVide($key, $data['poids'], $data['code'])) {  // Check si c'est un double ou vide
+              $data['poids'] = null; //On met la value à null si la fonction renvoie false
+            };
+            break;
+
+          case 'volume': // double, no empty
+            $data['volume'] = str_replace(",", ".", $data['volume']); // On remplace la virgule par un point
+            if (!$fieldCheck->isDouble($key, $data['volume'] , $data['code']) || !$fieldCheck->isVide($key, $data['volume'], $data['code'])) {  // Check si c'est un double ou vide
+              $data['volume'] = null; //On met la value à null si la fonction renvoie false
+            };
+            break;
+
+          case 'dlv': // date ou vide
+            if (!$fieldCheck->isValidDate($key, $data['dlv'], $data['code']) ) { //Check si le format et le date sont valides
+              $data['dlv'] = null; //On met la value à null si la fonction renvoi false
+            } else if(!empty($data['dlv'])) {
+              // On met la date au format YYY/mm/dd pour insert dans la base
+              $data['dlv'] = date_create_from_format('d/m/Y', $data['dlv']);
+              $data['dlv'] = date_format($data['dlv'], 'Y-m-d');
+            }
+
+            break;
+
+          case 'duree_vie': // entier ou vide
+            if (!$fieldCheck->isInteger($key, $row, $data['code'])) {
+              // Check si entier ou vide
+              $data['duree_vie'] = null; //On met la value à null si la fonction renvoie false
+            };
+            break;
+
+          case 'gencod': // entier,  no empty
+            if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->isVide($key, $row, $data['code'])) {
+              // Check si entier ou vide
+              $data['gencod'] = null; //On met la value à null si la fonction renvoie false
+            };
+            break;
+
+          case 'douanier': // entier,  no empty
+            if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->isVide($key, $row, $data['code'])) {
+              // Check si entier ou vide
+              $data['douanier'] = null; //On met la value à null si la fonction renvoie false
+            };
+            break;
+
+          case 'dangereux': // alphanumeric, empty
+            if (!$fieldCheck->isalphaNum($key, $row, $data['code'])) {  // Check si alphnumerique
+              $data['dangereux'] = null; //On met la value à null si la fonction renvoie false
+            };
+            break;
+
+          case 'origin_id': // entier, no empty
+            //TODO GERER LES LIBELLE DES ORIGINES
+            if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->isVide($key, $row, $data['code'])) {
+              // Check si entier ou vide
+              $data['origin_id'] = null; //On met la value à null si la fonction renvoie false
+            };
+            break;
+
+          case 'tva': // double, no empty
+            $data['tva'] = str_replace(",", ".", $data['tva']); // On remplace la virgule par un point
+            if (!$fieldCheck->isDouble($key, $data['tva'] , $data['code']) || !$fieldCheck->isVide($key, $data['tva'], $data['code'])) {  // Check si c'est un double ou vide
+              $data['tva'] = null; //On met la value à null si la fonction renvoie false
+            };
+            break;
+
+          case 'cdref': // entier,  no empty
+          if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->isVide($key, $row, $data['code'])) {
+            // Check si entier ou vide
+            $data['cdref'] = null; //On met la value à null si la fonction renvoie false
+          };
+          break;
+
+          case 'category_code': // entier, no empty
+            if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->isVide($key, $row, $data['code'])) {
+              // Check si entier ou vide
+              $data['category_code'] = null; //On met la value à null si la fonction renvoie false
+            };
+            break;
+
+          case 'subcategory_code': // entier, no empty
+            if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->isVide($key, $row, $data['code'])) {
+              // Check si entier ou vide
+              $data['subcategory_code'] = null; //On met la value à null si la fonction renvoie false
+            };
+            break;
+
+          case 'entrepot': // entier, no empty
+            if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->isVide($key, $row, $data['code'])) {
+              // Check si entier ou vide
+              $data['entrepot'] = null; //On met la value à null si la fonction renvoie false
+            };
+            break;
+
+          case 'qualification': // P M ou A , no empty
+            $data['qualification'] = strtoupper($data['qualification']);
+            if (!$fieldCheck->matchString($key, $data['qualification'], $data['code'], ['P','M','A']) || !$fieldCheck->isVide($key, $data['qualification'], $data['code'])) {
+              // Check si correspond aux options ou vide
+              $data['qualification'] = null; //On met la value à null si la fonction renvoie false
+            };
+            break;
+
+          case 'couche_palette': // entier ou vide
+            if (!$fieldCheck->isInteger($key, $row, $data['code'])) {
+              // Check si entier ou vide
+              $data['couche_palette'] = null; //On met la value à null si la fonction renvoie false
+            };
+            break;
+
+          case 'colis_palette': // entier ou vide
+            if (!$fieldCheck->isInteger($key, $row, $data['code'])) {
+              // Check si entier ou vide
+              $data['colis_palette'] = null; //On met la value à null si la fonction renvoie false
+            };
+            break;
+
+          case 'pieceartk': // entier ou vide ( si uv K no empty) (si uv U vide)
+            //TODO Logique
+            //debug($data['uv']);
+            //die;
+            /*if (!$this->isInteger($key, $row, $data['code'])) {
+              // Check si entier ou vide
+              $data['colis_palette'] = null; //On met la value à null si la fonction renvoie false
+            };*/
+            break;
+
+          case 'ifls_remplacement': // alphanumeric, empty
+            if (!$fieldCheck->isalphaNum($key, $row, $data['code'])) {  // Check si alphnumerique
+              $data['ifls_remplacement'] = null; //On met la value à null si la fonction renvoie false
+            };
+            break;
 
 
+          case 'assortiment': // entier, no empty
+            if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->isVide($key, $row, $data['code'])) {
+              // Check si entier ou vide
+              $data['assortiment'] = null; //On met la value à null si la fonction renvoie false
+            };
+            break;
 
-    public function isvalidDouble($value, array $context)
-    {
-      if (is_double($value)) {
-        return true;
-      } else {
-        // Ajouter dans la table warning, un enregistrement avec le product_code, le title, la value, urgence
-        //debug($context);
-        //die;
+          case 'brand_id': // (entier ou vide) si code famille = XXXX mettre famille "VIN" | si vide ou "sans marque ou "sans" alert
+            //TODO Logique
+            break;
       }
+      };
 
     }
+
+
+
 
     /**
      * Default validation rules.
@@ -104,135 +275,85 @@ class ProductsTable extends Table
     {
 
         $validator
-            ->add('tva', 'validDouble', [
-                  'rule' => 'isvalidDouble',
-                  'message' => 'TVA is not a valid double',
-                  'provider' => 'table']);
-
-        $validator
             ->integer('id')
             ->allowEmpty('id', 'create');
 
         $validator
-            ->scalar('code')
-            ->maxLength('code', 50)
             ->allowEmpty('code');
 
         $validator
-            ->scalar('remplacement_product')
-            ->maxLength('remplacement_product', 255)
             ->allowEmpty('remplacement_product');
 
         $validator
-            ->scalar('title')
-            ->maxLength('title', 255)
             ->allowEmpty('title');
 
         $validator
-            ->integer('pcb')
             ->allowEmpty('pcb');
 
         $validator
-            ->numeric('prix')
             ->allowEmpty('prix');
 
         $validator
-            ->scalar('uv')
-            ->maxLength('uv', 255)
             ->allowEmpty('uv');
 
         $validator
-            ->numeric('poids')
             ->allowEmpty('poids');
 
         $validator
-            ->numeric('volume')
             ->allowEmpty('volume');
 
         $validator
-            ->scalar('dlv')
-            ->maxLength('dlv', 255)
             ->allowEmpty('dlv');
 
         $validator
-            ->scalar('duree_vie')
-            ->maxLength('duree_vie', 255)
             ->allowEmpty('duree_vie');
 
         $validator
-            ->scalar('gencod')
-            ->maxLength('gencod', 255)
             ->allowEmpty('gencod');
 
         $validator
-            ->scalar('douanier')
-            ->maxLength('douanier', 255)
             ->allowEmpty('douanier');
 
         $validator
-            ->scalar('dangereux')
-            ->maxLength('dangereux', 255)
             ->allowEmpty('dangereux');
 
         $validator
-            ->scalar('tva')
-            ->maxLength('tva', 255)
             ->allowEmpty('tva');
 
         $validator
-            ->scalar('cdref')
-            ->maxLength('cdref', 255)
             ->allowEmpty('cdref');
 
         $validator
-            ->scalar('category_code')
-            ->maxLength('category_code', 255)
             ->allowEmpty('category_code');
 
         $validator
-            ->scalar('subcategory_code')
-            ->maxLength('subcategory_code', 255)
             ->allowEmpty('subcategory_code');
 
         $validator
-            ->scalar('entrepot')
-            ->maxLength('entrepot', 255)
             ->allowEmpty('entrepot');
 
         $validator
-            ->scalar('supplier')
-            ->maxLength('supplier', 255)
             ->allowEmpty('supplier');
 
         $validator
-            ->scalar('qualification')
-            ->maxLength('qualification', 255)
             ->allowEmpty('qualification');
 
         $validator
-            ->integer('couche_palette')
             ->allowEmpty('couche_palette');
 
         $validator
-            ->integer('colis_palette')
             ->allowEmpty('colis_palette');
 
         $validator
-            ->scalar('pieceartk')
-            ->maxLength('pieceartk', 255)
             ->allowEmpty('pieceartk');
 
         $validator
-            ->scalar('ifls_remplacement')
-            ->maxLength('ifls_remplacement', 255)
             ->allowEmpty('ifls_remplacement');
 
         $validator
-            ->integer('assortiment')
             ->allowEmpty('assortiment');
 
         $validator
-            ->boolean('active')
             ->notEmpty('active');
 
         return $validator;

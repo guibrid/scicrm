@@ -8,8 +8,6 @@
     <ul class="side-nav">
         <li class="heading"><?= __('Actions') ?></li>
         <li><?= $this->Html->link(__('List Warnings'), ['action' => 'index']) ?></li>
-        <li><?= $this->Html->link(__('List Products'), ['controller' => 'Products', 'action' => 'index']) ?></li>
-        <li><?= $this->Html->link(__('New Product'), ['controller' => 'Products', 'action' => 'add']) ?></li>
     </ul>
 </nav>
 <div class="warnings form large-9 medium-8 columns content">
@@ -18,8 +16,10 @@
         <legend><?= __('Add Warning') ?></legend>
         <?php
             echo $this->Form->control('title');
+            echo $this->Form->control('product_code');
+            echo $this->Form->control('field');
+            echo $this->Form->control('value');
             echo $this->Form->control('urgence');
-            echo $this->Form->control('products._ids', ['options' => $products]);
         ?>
     </fieldset>
     <?= $this->Form->button(__('Submit')) ?>

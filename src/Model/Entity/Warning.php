@@ -9,12 +9,11 @@ use Cake\ORM\Entity;
  * @property int $id
  * @property string $title
  * @property string $product_code
+ * @property string $field
  * @property string $value
  * @property int $urgence
  * @property \Cake\I18n\FrozenTime $created
  * @property \Cake\I18n\FrozenTime $modified
- *
- * @property \App\Model\Entity\Product[] $products
  */
 class Warning extends Entity
 {
@@ -31,10 +30,10 @@ class Warning extends Entity
     protected $_accessible = [
         'title' => true,
         'product_code' => true,
+        'field' => true,
         'value' => true,
         'urgence' => true,
         'created' => true,
-        'modified' => true,
-        'products' => true
+        'modified' => true
     ];
 }

@@ -65,6 +65,12 @@ class WarningsTable extends Table
             ->notEmpty('product_code');
 
         $validator
+            ->scalar('field')
+            ->maxLength('field', 255)
+            ->requirePresence('field', 'create')
+            ->notEmpty('field');
+
+        $validator
             ->scalar('value')
             ->maxLength('value', 255)
             ->requirePresence('value', 'create')

@@ -4,6 +4,7 @@ namespace App\Controller;
 use App\Controller\AppController;
 use Box\Spout\Reader\ReaderFactory;
 use Box\Spout\Common\Type;
+use Cake\ORM\TableRegistry;
 
 /**
  * Products Controller
@@ -152,29 +153,38 @@ class ProductsController extends AppController
     public function updateBase()
     {
 
-        //$product = $this->Products->newEntity();
         $reader = ReaderFactory::create(Type::CSV); // for CSV files
         $reader->setFieldDelimiter('|');
-        $reader->open('files/test7.csv');
+        $reader->open('files/test7light.csv');
 
-        $i = 0;
+        $productSearch = TableRegistry::get('products');
+
+        //$i = 0;
         foreach ($reader->getSheetIterator() as $sheet) {
 
-          foreach ($sheet->getRowIterator() as $productRow) {
-              if ($i < 279 AND $i >1) {
+          foreach ($sheet->getRowIterator() as $key => $productRow) {
+
+              //if ($i < 279 AND $i >275) {
+                // On renome les keys du array avec les entetes de la table products
+                $productRow = $this->renameHeaderArray($productRow);
+
+                //On recherche si le code article existe dans la table products
+                if ($productSearch->exists(['code' => $productRow['code']]) ) {
+                  //Si il existe on l'ajoute dans la liste des products à update
+                  $updateProductList[$key] = $productRow;
+                } else {
+                  //Si il n'existe pas on l'ajoute dans la liste des products à insert
+                  $insertProductList[$key] = $productRow;
+                }
 
 
-                //Si le code article existe dans la table products on l'ajoute dans array $updateProductList. C'est la liste des articles à update
-                //$updateProductList[] = $this->renameHeaderArray($productRow);
-
-                // si le code n'existe pas dans la table products on l'ajoute dans array $insertProductList. C'est la liste des nouveaux articles à ajouter à la base
-                $insertProductList[] = $this->renameHeaderArray($productRow);
-
-              }
-              $i++;
+              //}
+              //$i++;
           }
 
         }
+//debug($updateProductList);
+//debug($insertProductList);
 
             $this->insertProductList($insertProductList);
             //$this->updateProductList($updateProductList);
@@ -212,7 +222,8 @@ class ProductsController extends AppController
       if ($this->Products->saveMany($product)) {
           $this->Flash->success(__('The product has been saved.'));
       } else {
-          Debug($product->errors());
+        //Affiche la liste des errors d'insertion si il y en a
+        foreach($product as $error) {  Debug($error->errors());}
       }
     }
 }

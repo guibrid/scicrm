@@ -1,0 +1,80 @@
+<?php
+namespace App\Utility;
+
+use App\Utility\Warnings;
+
+
+class FieldCheck
+{
+
+    public function isValidDate($field, $value, $product_code)
+    {
+      // Regex du format date jj/mm/YYYY
+      $regex = '/(^(((0[1-9]|1[0-9]|2[0-8])[\/](0[1-9]|1[012]))|((29|30|31)[\/](0[13578]|1[02]))|((29|30)[\/](0[4,6,9]|11)))[\/](19|[2-9][0-9])\d\d$)|(^29[\/]02[\/](19|[2-9][0-9])(00|04|08|12|16|20|24|28|32|36|40|44|48|52|56|60|64|68|72|76|80|84|88|92|96)$)/m';
+      preg_match_all($regex, $value, $matches, PREG_SET_ORDER, 0);
+
+      if(empty($matches) && !empty($value)) { //Si la valeur n'existe pas on insert un warning
+        $warning = new Warnings;
+        $warning->insert($field.' ne correspond pas au format date jj/mm/YYYY', $product_code, $field,  $value);
+        return false;
+      }
+        return true;
+    }
+
+    public function matchString($field, $value, $product_code, $options)
+    {
+      if (!in_array($value, $options) && !empty($value)) { // On recherche dans le array des options si la valeur existe
+        //Si la valeur n'existe pas on insert un warning
+        $warning = new Warnings;
+        $warning->insert($field.' ne correspond pas aux options valide', $product_code, $field,  $value);
+        return false;
+      }
+      return true;
+    }
+
+    public function isVide($field, $value, $product_code)
+    {
+      if (empty($value)) {
+        //Si la valeur est empty on insert un warning
+        $warning = new Warnings;
+        $warning->insert($field.' est vide', $product_code, $field,  $value);
+        return false;
+      }
+      return true;
+    }
+
+    public function isInteger($field, $value, $product_code)
+    {
+      if (!ctype_digit((string)$value) && !empty($value)) {
+        //Si la valeur n'est pas un entier ou vide
+        $warning = new Warnings;
+        $warning->insert($field.' n\'est pas un entier', $product_code, $field,  $value);
+        return false;
+      }
+      return true;
+    }
+
+    public function isDouble($field, $value, $product_code)
+    {
+      if (!filter_var($value, FILTER_VALIDATE_FLOAT) && !empty($value)) { // Valide string **.** as float number
+        //Si la valeur n'est pas un float
+        $warning = new Warnings;
+        $warning->insert($field.' n\'est pas un chiffre à décimal', $product_code, $field,  $value);
+        return false;
+      }
+      return true;
+    }
+
+    //Verification du format alphanumerique
+    public function isalphaNum($field, $value, $product_code)
+    {
+      if (!ctype_alnum($value) && !empty($value)) {
+        //Si le code n'est pas alpha numérique ou vide on ajoute un warning
+        $warning = new Warnings;
+        $warning->insert($field.' n\'est pas alphanuméric', $product_code, $field, $value);
+        return false;
+      }
+      return true;
+    }
+
+}

@@ -159,6 +159,13 @@ class FieldCheck
     //Vérification Marques pour les vins
     public function checkVins($field, $value, $product_code, $subcategory_code, $qualification, $subcategoriesVin)
     {
+      /**
+      *
+      * Marques "Vin" pour tous les articles ayant un code "Qualification" A.
+      * Pour code Qualification P indiquer 1er Prix.
+      * Pour code Qualification M indiquer MDD sauf pour la marque Reflets de France qu'il faut indiquer en toutes lettres.
+      *
+      **/
         if (!is_null($subcategory_code) && !is_null($qualification)) {
 
           if (in_array($subcategory_code, $subcategoriesVin)) {
@@ -186,6 +193,36 @@ class FieldCheck
           //Sinon on créée une alerte Marque
           $warning = new Warnings;
           $warning->insert('Code sous famille ou Qualification absente. Impossible de déterminer la marque lier au Vin', $product_code, $field, $value);
+        }
+        return $value;
+    }
+
+    //Vérification Marques pour les vins
+    public function checkPieceartk($field, $value, $product_code, $uv)
+    {
+        /**
+        *
+        * Si la colonne uv est égale à K, pieceartk ne peut pas être vide (si uv U vide)
+        * Si la colonne uv est égale à U, pieceartk doit être vide
+        *
+        **/
+        if ( !empty($uv) || is_null($uv) )
+        {
+          if ( $uv === 'K' && empty($value) ) {
+            //On créée une alerte
+            $warning = new Warnings;
+            $warning->insert('uv est à K, pieceartk ne peut pas être vide', $product_code, $field, $value);
+            $value = null;
+          } else if( $uv === 'U' && !empty($value) ) {
+            //On créée une alerte
+            $warning = new Warnings;
+            $warning->insert('uv est à U, pieceartk doit être vide', $product_code, $field, $value);
+            $value = null;
+          }
+        } else {
+          //On créée une alerte
+          $warning = new Warnings;
+          $warning->insert('Impossible de definir pieceartk car UV est vide', $product_code, $field, $value);
         }
         return $value;
     }

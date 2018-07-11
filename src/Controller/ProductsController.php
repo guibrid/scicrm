@@ -15,7 +15,7 @@ use Cake\ORM\TableRegistry;
  */
 class ProductsController extends AppController
 {
-
+  //Liste des entetes de colonne du ficher CSV lors de l'importation
   private $headers = ['code',
             'remplacement_product',
             'title',

@@ -165,12 +165,9 @@ class ProductsTable extends Table
             };
             break;
 
-          case 'origin_id': // entier, no empty
-            //TODO GERER LES LIBELLE DES ORIGINES
-            if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->isVide($key, $row, $data['code'])) {
-              // Check si entier ou vide
-              $data['origin_id'] = null; //On met la value à null si la fonction renvoie false
-            };
+          case 'origin_id': // entier ou vide
+              // Recherche de l'id dans les tables origins et shortorigins
+              $data['origin_id'] = $fieldCheck->searchOrigin($key, $row, $data['code']);
             break;
 
           case 'tva': // double, no empty
@@ -255,7 +252,14 @@ class ProductsTable extends Table
             break;
 
           case 'brand_id': // (entier ou vide) si code famille = XXXX mettre famille "VIN" | si vide ou "sans marque ou "sans" alert
-            //TODO Logique
+          //TODO GERER LES LIBELLE DES ORIGINES
+          //Verifier dans la table orgines que la valeur existe
+            //Si elle existe  $data['origin_id'] = origin.id trouver dans la base
+
+            //Sinon vérifier dans la table shortorgins que la valeur existe
+             //Si elle existe et que shortorgins.origin_id est renseigneé alors $data['origin_id'] = shortorgins.origin_id
+
+          //Si elle n'existe nul par l'ajouter dans shortorigins sans lui associer de origin_id, créer un alert origin iconnue
             break;
       }
       };

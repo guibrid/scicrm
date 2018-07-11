@@ -2,6 +2,7 @@
 namespace App\Utility;
 
 use App\Utility\Warnings;
+use Cake\ORM\TableRegistry;
 
 
 class FieldCheck
@@ -75,6 +76,30 @@ class FieldCheck
         return false;
       }
       return true;
+    }
+
+    //Recherche de l'origine
+    public function searchOrigin($field, $value, $product_code)
+    {
+        //Verifier dans la table origins que la valeur existe
+        $originSearch = TableRegistry::get('origins');
+        $origin = $originSearch->find()->where(['title =' => $value])->first();
+        if (!is_null($origin)) {  // Si non trouve une correspondance dans la table origins
+          return $origin->id;
+        };
+
+        //Sinon on verifie dans la table shortorigins que la valeur existe et qu'elle a une origin_id associée
+        $shortoriginSearch = TableRegistry::get('shortorigins');
+        $shortorigin = $shortoriginSearch->find()->where(['title =' => $value, 'origin_id IS NOT' => null])->first();
+        if (!is_null($shortorigin)) {  // Si non trouve une correspondance dans la table $shortorigin on renvoie origin_id associé
+          return $shortorigin->origin_id;
+        };
+
+        //Sinon on créée une alerte Origin inconu et on return null pour la valeur
+        $warning = new Warnings;
+        $warning->insert('Origine n\'existe pas dans la table origins ou shortorigins', $product_code, $field, $value);
+        return null;
+
     }
 
 }

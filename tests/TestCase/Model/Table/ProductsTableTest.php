@@ -27,7 +27,6 @@ class ProductsTableTest extends TestCase
         'app.products',
         'app.origins',
         'app.brands',
-        'app.warnings',
         'app.shortbrands',
         'app.shortorigins'
     ];
@@ -72,16 +71,6 @@ class ProductsTableTest extends TestCase
      * @return void
      */
     public function testBeforeMarshal()
-    {
-        $this->markTestIncomplete('Not implemented yet.');
-    }
-
-    /**
-     * Test isvalidDouble method
-     *
-     * @return void
-     */
-    public function testIsvalidDouble()
     {
         $this->markTestIncomplete('Not implemented yet.');
     }

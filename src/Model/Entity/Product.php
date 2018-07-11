@@ -15,24 +15,24 @@ use Cake\ORM\Entity;
  * @property string $uv
  * @property float $poids
  * @property float $volume
- * @property string $dlv
- * @property string $duree_vie
- * @property string $gencod
- * @property string $douanier
+ * @property \Cake\I18n\FrozenDate $dlv
+ * @property int $duree_vie
+ * @property int $gencod
+ * @property int $douanier
  * @property string $dangereux
  * @property string $origin_id
- * @property string $tva
+ * @property float $tva
  * @property string $cdref
- * @property string $category_code
- * @property string $subcategory_code
+ * @property int $category_code
+ * @property int $subcategory_code
  * @property string $entrepot
  * @property string $supplier
  * @property string $qualification
- * @property int $couche_palette
- * @property int $colis_palette
+ * @property string $couche_palette
+ * @property string $colis_palette
  * @property string $pieceartk
  * @property string $ifls_remplacement
- * @property int $assortiment
+ * @property string $assortiment
  * @property string $brand_id
  * @property bool $active
  * @property \Cake\I18n\FrozenTime $created
@@ -40,7 +40,6 @@ use Cake\ORM\Entity;
  *
  * @property \App\Model\Entity\Origin $origin
  * @property \App\Model\Entity\Brand $brand
- * @property \App\Model\Entity\Warning[] $warnings
  * @property \App\Model\Entity\Shortbrand[] $shortbrands
  * @property \App\Model\Entity\Shortorigin[] $shortorigins
  */
@@ -89,7 +88,6 @@ class Product extends Entity
         'modified' => true,
         'origin' => true,
         'brand' => true,
-        'warnings' => true,
         'shortbrands' => true,
         'shortorigins' => true
     ];

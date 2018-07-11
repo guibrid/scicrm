@@ -99,7 +99,95 @@ class FieldCheck
         $warning = new Warnings;
         $warning->insert('Origine n\'existe pas dans la table origins ou shortorigins', $product_code, $field, $value);
         return null;
+    }
 
+    //Recherche le category code
+    public function searchCategory($field, $value, $product_code)
+    {
+        //Verifier dans la table categories que la valeur existe
+        $categorySearch = TableRegistry::get('categories');
+        $category = $categorySearch->find()->where(['code =' => $value])->first();
+        if (!is_null($category)) {  // Si non trouve une correspondance dans la table categories
+          return $category->code;
+        } else {
+          //Sinon on créée une alerte Category inconu et on return null pour la valeur
+          $warning = new Warnings;
+          $warning->insert('Ce code catégorie n\'existe pas dans la table categories', $product_code, $field, $value);
+          return null;
+        }
+    }
+
+    //Recherche le subcategory code
+    public function searchSubcategory($field, $value, $product_code)
+    {
+        //Verifier dans la table subcategories que la valeur existe
+        $subcategorySearch = TableRegistry::get('subcategories');
+        $subcategory = $subcategorySearch->find()->where(['code =' => $value])->first();
+        if (!is_null($subcategory)) {  // Si non trouve une correspondance dans la table subcategories
+          return $subcategory->code;
+        } else {
+          //Sinon on créée une alerte subCategory inconu et on return null pour la valeur
+          $warning = new Warnings;
+          $warning->insert('Ce code subcatégorie n\'existe pas dans la table subcategories', $product_code, $field, $value);
+          return null;
+        }
+    }
+
+    //Recherche de brands
+    public function searchBrands($field, $value, $product_code)
+    {
+        //Verifier dans la table brands que la valeur existe
+        $brandSearch = TableRegistry::get('brands');
+        $brand = $brandSearch->find()->where(['title =' => $value])->first();
+        if (!is_null($brand)) {  // Si non trouve une correspondance dans la table brands
+          return $brand->id;
+        };
+
+        //Sinon on verifie dans la table shortbrands que la valeur existe et qu'elle a une brand_id associée
+        $shortbrandSearch = TableRegistry::get('shortbrands');
+        $shortbrand = $shortbrandSearch->find()->where(['title =' => $value, 'brand_id IS NOT' => null])->first();
+        if (!is_null($shortbrand)) {  // Si non trouve une correspondance dans la table $shortorigin on renvoie origin_id associé
+          return $shortbrand->brand_id;
+        };
+
+        //Sinon on créée une alerte Origin inconu et on return null pour la valeur
+        $warning = new Warnings;
+        $warning->insert('La marque n\'existe pas dans la table brands ou shortbrands', $product_code, $field, $value);
+        return null;
+    }
+
+    //Vérification Marques pour les vins
+    public function checkVins($field, $value, $product_code, $subcategory_code, $qualification, $subcategoriesVin)
+    {
+        if (!is_null($subcategory_code) && !is_null($qualification)) {
+
+          if (in_array($subcategory_code, $subcategoriesVin)) {
+
+            switch ($qualification) {
+            case 'P':
+                $value = '1er Prix';
+                break;
+            case 'A':
+                $value = 'Vin';
+                break;
+            case 'M':
+                $brand = strtolower($value);
+                if ($brand === 'reflets de france') {
+                  $value = 'Reflets de France'; }
+                else {
+                  $value = 'MDD';
+                }
+                break;
+            }
+
+          }
+
+        } else {
+          //Sinon on créée une alerte Marque
+          $warning = new Warnings;
+          $warning->insert('Code sous famille ou Qualification absente. Impossible de déterminer la marque lier au Vin', $product_code, $field, $value);
+        }
+        return $value;
     }
 
 }

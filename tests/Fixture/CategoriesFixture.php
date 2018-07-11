@@ -53,8 +53,8 @@ class CategoriesFixture extends TestFixture
                 'type' => 1,
                 'store_id' => 1,
                 'active' => 1,
-                'created' => '2018-07-06 06:49:48',
-                'modified' => '2018-07-06 06:49:48'
+                'created' => '2018-07-11 14:50:38',
+                'modified' => '2018-07-11 14:50:38'
             ],
         ];
         parent::init();

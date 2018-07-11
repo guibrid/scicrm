@@ -165,7 +165,7 @@ class ProductsTable extends Table
             };
             break;
 
-          case 'origin_id': // entier ou vide
+          case 'origin_id': // entier , no empty(alert)
               // Recherche de l'id dans les tables origins et shortorigins
               $data['origin_id'] = $fieldCheck->searchOrigin($key, $row, $data['code']);
             break;
@@ -184,18 +184,15 @@ class ProductsTable extends Table
           };
           break;
 
-          case 'category_code': // entier, no empty
-            if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->isVide($key, $row, $data['code'])) {
-              // Check si entier ou vide
-              $data['category_code'] = null; //On met la value à null si la fonction renvoie false
-            };
+          case 'category_code': // entier, no empty(alert)
+            // Recherche de le code dans les tables categories
+            $data['category_code'] = $fieldCheck->searchCategory($key, $row, $data['code']);
             break;
 
-          case 'subcategory_code': // entier, no empty
-            if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->isVide($key, $row, $data['code'])) {
-              // Check si entier ou vide
-              $data['subcategory_code'] = null; //On met la value à null si la fonction renvoie false
-            };
+          case 'subcategory_code': // entier, no empty(alert)
+            // Recherche de le code dans les tables subcategories
+            $data['subcategory_code'] = $fieldCheck->searchSubcategory($key, $row, $data['code']);
+
             break;
 
           case 'entrepot': // entier, no empty
@@ -251,16 +248,20 @@ class ProductsTable extends Table
             };
             break;
 
-          case 'brand_id': // (entier ou vide) si code famille = XXXX mettre famille "VIN" | si vide ou "sans marque ou "sans" alert
-          //TODO GERER LES LIBELLE DES ORIGINES
-          //Verifier dans la table orgines que la valeur existe
-            //Si elle existe  $data['origin_id'] = origin.id trouver dans la base
+          case 'brand_id': // entier, no empty
+          //Gestion du cas particuliers des marques de vin
+          $subcategoriesVin =['10300','10301','10302','10303','10304','10305','10310','10311',
+                              '10312','10313','10314','10315','10316','10317','10318','10319',
+                              '10320','10321','10322','10323','10324','10325','10326','10330',
+                              '10331','10332','10333','10334','10335','10336','10337','10340',
+                              '10341','10342','10343','10344','10345','10346','10347','10350',
+                              '10398'];
+          //Renomer la Marques en fonction du cas particulier des subcategories et Qualification lier au Vin
+          $fieldCheck->checkVins($key, $row, $data['code'], $data['subcategory_code'], $data['qualification'], $subcategoriesVin);
 
-            //Sinon vérifier dans la table shortorgins que la valeur existe
-             //Si elle existe et que shortorgins.origin_id est renseigneé alors $data['origin_id'] = shortorgins.origin_id
-
-          //Si elle n'existe nul par l'ajouter dans shortorigins sans lui associer de origin_id, créer un alert origin iconnue
-            break;
+          // Recherche de l'id dans les tables brands et shortbrands
+          $data['brand_id'] = $fieldCheck->searchBrands($key, $row, $data['code']);
+          break;
       }
       };
 

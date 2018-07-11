@@ -9,8 +9,6 @@ use Cake\Validation\Validator;
 /**
  * Subcategories Model
  *
- * @property \App\Model\Table\CategoriesTable|\Cake\ORM\Association\BelongsTo $Categories
- *
  * @method \App\Model\Entity\Subcategory get($primaryKey, $options = [])
  * @method \App\Model\Entity\Subcategory newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Subcategory[] newEntities(array $data, array $options = [])
@@ -40,11 +38,6 @@ class SubcategoriesTable extends Table
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
-
-        $this->belongsTo('Categories', [
-            'foreignKey' => 'category_id',
-            'joinType' => 'INNER'
-        ]);
     }
 
     /**
@@ -72,24 +65,14 @@ class SubcategoriesTable extends Table
             ->notEmpty('title');
 
         $validator
+            ->integer('category_code')
+            ->allowEmpty('category_code');
+
+        $validator
             ->boolean('active')
             ->requirePresence('active', 'create')
             ->notEmpty('active');
 
         return $validator;
-    }
-
-    /**
-     * Returns a rules checker object that will be used for validating
-     * application integrity.
-     *
-     * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
-     * @return \Cake\ORM\RulesChecker
-     */
-    public function buildRules(RulesChecker $rules)
-    {
-        $rules->add($rules->existsIn(['category_id'], 'Categories'));
-
-        return $rules;
     }
 }

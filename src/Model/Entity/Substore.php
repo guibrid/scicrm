@@ -4,20 +4,19 @@ namespace App\Model\Entity;
 use Cake\ORM\Entity;
 
 /**
- * Category Entity
+ * Substore Entity
  *
  * @property int $id
- * @property string $code
+ * @property int $code
  * @property string $title
- * @property int $type
- * @property int $substore_id
- * @property bool $active
+ * @property int $store_id
  * @property \Cake\I18n\FrozenTime $created
  * @property \Cake\I18n\FrozenTime $modified
  *
  * @property \App\Model\Entity\Store $store
+ * @property \App\Model\Entity\Category[] $categories
  */
-class Category extends Entity
+class Substore extends Entity
 {
 
     /**
@@ -32,11 +31,10 @@ class Category extends Entity
     protected $_accessible = [
         'code' => true,
         'title' => true,
-        'type' => true,
-        'substore_id' => true,
-        'active' => true,
+        'store_id' => true,
         'created' => true,
         'modified' => true,
-        'store' => true
+        'store' => true,
+        'categories' => true
     ];
 }

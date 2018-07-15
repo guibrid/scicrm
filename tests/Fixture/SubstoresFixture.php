@@ -4,10 +4,10 @@ namespace App\Test\Fixture;
 use Cake\TestSuite\Fixture\TestFixture;
 
 /**
- * CategoriesFixture
+ * SubstoresFixture
  *
  */
-class CategoriesFixture extends TestFixture
+class SubstoresFixture extends TestFixture
 {
 
     /**
@@ -18,15 +18,13 @@ class CategoriesFixture extends TestFixture
     // @codingStandardsIgnoreStart
     public $fields = [
         'id' => ['type' => 'integer', 'length' => 11, 'unsigned' => false, 'null' => false, 'default' => null, 'comment' => '', 'autoIncrement' => true, 'precision' => null],
-        'code' => ['type' => 'string', 'length' => 255, 'null' => false, 'default' => null, 'collate' => 'utf8_general_ci', 'comment' => '', 'precision' => null, 'fixed' => null],
+        'code' => ['type' => 'integer', 'length' => 11, 'unsigned' => false, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null, 'autoIncrement' => null],
         'title' => ['type' => 'string', 'length' => 255, 'null' => false, 'default' => null, 'collate' => 'utf8_general_ci', 'comment' => '', 'precision' => null, 'fixed' => null],
-        'type' => ['type' => 'integer', 'length' => 11, 'unsigned' => false, 'null' => false, 'default' => null, 'comment' => '1AL "1": Sec alimentaire; 1NAL "2": Sec non alimentaire; 2AL "3": Surgeler; 3AL "4": Frais (Voir colonne AG) ', 'precision' => null, 'autoIncrement' => null],
-        'substore_id' => ['type' => 'integer', 'length' => 11, 'unsigned' => false, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null, 'autoIncrement' => null],
-        'active' => ['type' => 'boolean', 'length' => null, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null],
+        'store_id' => ['type' => 'integer', 'length' => 11, 'unsigned' => false, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null, 'autoIncrement' => null],
         'created' => ['type' => 'datetime', 'length' => null, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null],
         'modified' => ['type' => 'datetime', 'length' => null, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null],
         '_indexes' => [
-            'fkey_substore_id' => ['type' => 'index', 'columns' => ['substore_id'], 'length' => []],
+            'fkey_store_id' => ['type' => 'index', 'columns' => ['store_id'], 'length' => []],
         ],
         '_constraints' => [
             'primary' => ['type' => 'primary', 'columns' => ['id'], 'length' => []],
@@ -48,13 +46,11 @@ class CategoriesFixture extends TestFixture
         $this->records = [
             [
                 'id' => 1,
-                'code' => 'Lorem ipsum dolor sit amet',
+                'code' => 1,
                 'title' => 'Lorem ipsum dolor sit amet',
-                'type' => 1,
-                'substore_id' => 1,
-                'active' => 1,
-                'created' => '2018-07-15 12:03:25',
-                'modified' => '2018-07-15 12:03:25'
+                'store_id' => 1,
+                'created' => '2018-07-15 11:56:18',
+                'modified' => '2018-07-15 11:56:18'
             ],
         ];
         parent::init();

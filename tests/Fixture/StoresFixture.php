@@ -42,8 +42,8 @@ class StoresFixture extends TestFixture
             [
                 'id' => 1,
                 'title' => 'Lorem ipsum dolor sit amet',
-                'created' => '2018-07-06 06:50:35',
-                'updated' => '2018-07-06 06:50:35'
+                'created' => '2018-07-15 12:02:43',
+                'updated' => '2018-07-15 12:02:43'
             ],
         ];
         parent::init();

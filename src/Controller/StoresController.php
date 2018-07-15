@@ -35,7 +35,7 @@ class StoresController extends AppController
     public function view($id = null)
     {
         $store = $this->Stores->get($id, [
-            'contain' => ['Categories']
+            'contain' => ['Substores']
         ]);
 
         $this->set('store', $store);

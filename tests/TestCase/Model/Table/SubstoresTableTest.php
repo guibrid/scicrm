@@ -1,22 +1,22 @@
 <?php
 namespace App\Test\TestCase\Model\Table;
 
-use App\Model\Table\StoresTable;
+use App\Model\Table\SubstoresTable;
 use Cake\ORM\TableRegistry;
 use Cake\TestSuite\TestCase;
 
 /**
- * App\Model\Table\StoresTable Test Case
+ * App\Model\Table\SubstoresTable Test Case
  */
-class StoresTableTest extends TestCase
+class SubstoresTableTest extends TestCase
 {
 
     /**
      * Test subject
      *
-     * @var \App\Model\Table\StoresTable
+     * @var \App\Model\Table\SubstoresTable
      */
-    public $Stores;
+    public $Substores;
 
     /**
      * Fixtures
@@ -24,8 +24,9 @@ class StoresTableTest extends TestCase
      * @var array
      */
     public $fixtures = [
+        'app.substores',
         'app.stores',
-        'app.substores'
+        'app.categories'
     ];
 
     /**
@@ -36,8 +37,8 @@ class StoresTableTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $config = TableRegistry::getTableLocator()->exists('Stores') ? [] : ['className' => StoresTable::class];
-        $this->Stores = TableRegistry::getTableLocator()->get('Stores', $config);
+        $config = TableRegistry::getTableLocator()->exists('Substores') ? [] : ['className' => SubstoresTable::class];
+        $this->Substores = TableRegistry::getTableLocator()->get('Substores', $config);
     }
 
     /**
@@ -47,7 +48,7 @@ class StoresTableTest extends TestCase
      */
     public function tearDown()
     {
-        unset($this->Stores);
+        unset($this->Substores);
 
         parent::tearDown();
     }
@@ -68,6 +69,16 @@ class StoresTableTest extends TestCase
      * @return void
      */
     public function testValidationDefault()
+    {
+        $this->markTestIncomplete('Not implemented yet.');
+    }
+
+    /**
+     * Test buildRules method
+     *
+     * @return void
+     */
+    public function testBuildRules()
     {
         $this->markTestIncomplete('Not implemented yet.');
     }

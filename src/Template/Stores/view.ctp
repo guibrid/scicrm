@@ -11,8 +11,8 @@
         <li><?= $this->Form->postLink(__('Delete Store'), ['action' => 'delete', $store->id], ['confirm' => __('Are you sure you want to delete # {0}?', $store->id)]) ?> </li>
         <li><?= $this->Html->link(__('List Stores'), ['action' => 'index']) ?> </li>
         <li><?= $this->Html->link(__('New Store'), ['action' => 'add']) ?> </li>
-        <li><?= $this->Html->link(__('List Categories'), ['controller' => 'Categories', 'action' => 'index']) ?> </li>
-        <li><?= $this->Html->link(__('New Category'), ['controller' => 'Categories', 'action' => 'add']) ?> </li>
+        <li><?= $this->Html->link(__('List Substores'), ['controller' => 'Substores', 'action' => 'index']) ?> </li>
+        <li><?= $this->Html->link(__('New Substore'), ['controller' => 'Substores', 'action' => 'add']) ?> </li>
     </ul>
 </nav>
 <div class="stores view large-9 medium-8 columns content">
@@ -36,34 +36,30 @@
         </tr>
     </table>
     <div class="related">
-        <h4><?= __('Related Categories') ?></h4>
-        <?php if (!empty($store->categories)): ?>
+        <h4><?= __('Related Substores') ?></h4>
+        <?php if (!empty($store->substores)): ?>
         <table cellpadding="0" cellspacing="0">
             <tr>
                 <th scope="col"><?= __('Id') ?></th>
                 <th scope="col"><?= __('Code') ?></th>
                 <th scope="col"><?= __('Title') ?></th>
-                <th scope="col"><?= __('Type') ?></th>
                 <th scope="col"><?= __('Store Id') ?></th>
-                <th scope="col"><?= __('Active') ?></th>
                 <th scope="col"><?= __('Created') ?></th>
                 <th scope="col"><?= __('Modified') ?></th>
                 <th scope="col" class="actions"><?= __('Actions') ?></th>
             </tr>
-            <?php foreach ($store->categories as $categories): ?>
+            <?php foreach ($store->substores as $substores): ?>
             <tr>
-                <td><?= h($categories->id) ?></td>
-                <td><?= h($categories->code) ?></td>
-                <td><?= h($categories->title) ?></td>
-                <td><?= h($categories->type) ?></td>
-                <td><?= h($categories->store_id) ?></td>
-                <td><?= h($categories->active) ?></td>
-                <td><?= h($categories->created) ?></td>
-                <td><?= h($categories->modified) ?></td>
+                <td><?= h($substores->id) ?></td>
+                <td><?= h($substores->code) ?></td>
+                <td><?= h($substores->title) ?></td>
+                <td><?= h($substores->store_id) ?></td>
+                <td><?= h($substores->created) ?></td>
+                <td><?= h($substores->modified) ?></td>
                 <td class="actions">
-                    <?= $this->Html->link(__('View'), ['controller' => 'Categories', 'action' => 'view', $categories->id]) ?>
-                    <?= $this->Html->link(__('Edit'), ['controller' => 'Categories', 'action' => 'edit', $categories->id]) ?>
-                    <?= $this->Form->postLink(__('Delete'), ['controller' => 'Categories', 'action' => 'delete', $categories->id], ['confirm' => __('Are you sure you want to delete # {0}?', $categories->id)]) ?>
+                    <?= $this->Html->link(__('View'), ['controller' => 'Substores', 'action' => 'view', $substores->id]) ?>
+                    <?= $this->Html->link(__('Edit'), ['controller' => 'Substores', 'action' => 'edit', $substores->id]) ?>
+                    <?= $this->Form->postLink(__('Delete'), ['controller' => 'Substores', 'action' => 'delete', $substores->id], ['confirm' => __('Are you sure you want to delete # {0}?', $substores->id)]) ?>
                 </td>
             </tr>
             <?php endforeach; ?>

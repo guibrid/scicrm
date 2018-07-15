@@ -1,48 +1,46 @@
 <?php
 /**
  * @var \App\View\AppView $this
- * @var \App\Model\Entity\Category[]|\Cake\Collection\CollectionInterface $categories
+ * @var \App\Model\Entity\Substore[]|\Cake\Collection\CollectionInterface $substores
  */
 ?>
 <nav class="large-3 medium-4 columns" id="actions-sidebar">
     <ul class="side-nav">
         <li class="heading"><?= __('Actions') ?></li>
-        <li><?= $this->Html->link(__('New Category'), ['action' => 'add']) ?></li>
+        <li><?= $this->Html->link(__('New Substore'), ['action' => 'add']) ?></li>
         <li><?= $this->Html->link(__('List Stores'), ['controller' => 'Stores', 'action' => 'index']) ?></li>
         <li><?= $this->Html->link(__('New Store'), ['controller' => 'Stores', 'action' => 'add']) ?></li>
+        <li><?= $this->Html->link(__('List Categories'), ['controller' => 'Categories', 'action' => 'index']) ?></li>
+        <li><?= $this->Html->link(__('New Category'), ['controller' => 'Categories', 'action' => 'add']) ?></li>
     </ul>
 </nav>
-<div class="categories index large-9 medium-8 columns content">
-    <h3><?= __('Categories') ?></h3>
+<div class="substores index large-9 medium-8 columns content">
+    <h3><?= __('Substores') ?></h3>
     <table cellpadding="0" cellspacing="0">
         <thead>
             <tr>
                 <th scope="col"><?= $this->Paginator->sort('id') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('code') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('title') ?></th>
-                <th scope="col"><?= $this->Paginator->sort('type') ?></th>
-                <th scope="col"><?= $this->Paginator->sort('substore_id') ?></th>
-                <th scope="col"><?= $this->Paginator->sort('active') ?></th>
+                <th scope="col"><?= $this->Paginator->sort('store_id') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('created') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('modified') ?></th>
                 <th scope="col" class="actions"><?= __('Actions') ?></th>
             </tr>
         </thead>
         <tbody>
-            <?php foreach ($categories as $category): ?>
+            <?php foreach ($substores as $substore): ?>
             <tr>
-                <td><?= $this->Number->format($category->id) ?></td>
-                <td><?= h($category->code) ?></td>
-                <td><?= h($category->title) ?></td>
-                <td><?= $this->Number->format($category->type) ?></td>
-                <td><?= $this->Number->format($category->substore_id) ?></td>
-                <td><?= h($category->active) ?></td>
-                <td><?= h($category->created) ?></td>
-                <td><?= h($category->modified) ?></td>
+                <td><?= $this->Number->format($substore->id) ?></td>
+                <td><?= $this->Number->format($substore->code) ?></td>
+                <td><?= h($substore->title) ?></td>
+                <td><?= $substore->has('store') ? $this->Html->link($substore->store->title, ['controller' => 'Stores', 'action' => 'view', $substore->store->id]) : '' ?></td>
+                <td><?= h($substore->created) ?></td>
+                <td><?= h($substore->modified) ?></td>
                 <td class="actions">
-                    <?= $this->Html->link(__('View'), ['action' => 'view', $category->id]) ?>
-                    <?= $this->Html->link(__('Edit'), ['action' => 'edit', $category->id]) ?>
-                    <?= $this->Form->postLink(__('Delete'), ['action' => 'delete', $category->id], ['confirm' => __('Are you sure you want to delete # {0}?', $category->id)]) ?>
+                    <?= $this->Html->link(__('View'), ['action' => 'view', $substore->id]) ?>
+                    <?= $this->Html->link(__('Edit'), ['action' => 'edit', $substore->id]) ?>
+                    <?= $this->Form->postLink(__('Delete'), ['action' => 'delete', $substore->id], ['confirm' => __('Are you sure you want to delete # {0}?', $substore->id)]) ?>
                 </td>
             </tr>
             <?php endforeach; ?>

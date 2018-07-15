@@ -8,8 +8,8 @@
     <ul class="side-nav">
         <li class="heading"><?= __('Actions') ?></li>
         <li><?= $this->Html->link(__('New Store'), ['action' => 'add']) ?></li>
-        <li><?= $this->Html->link(__('List Categories'), ['controller' => 'Categories', 'action' => 'index']) ?></li>
-        <li><?= $this->Html->link(__('New Category'), ['controller' => 'Categories', 'action' => 'add']) ?></li>
+        <li><?= $this->Html->link(__('List Substores'), ['controller' => 'Substores', 'action' => 'index']) ?></li>
+        <li><?= $this->Html->link(__('New Substore'), ['controller' => 'Substores', 'action' => 'add']) ?></li>
     </ul>
 </nav>
 <div class="stores index large-9 medium-8 columns content">

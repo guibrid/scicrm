@@ -9,7 +9,7 @@ use Cake\Validation\Validator;
 /**
  * Stores Model
  *
- * @property \App\Model\Table\CategoriesTable|\Cake\ORM\Association\HasMany $Categories
+ * @property \App\Model\Table\SubstoresTable|\Cake\ORM\Association\HasMany $Substores
  *
  * @method \App\Model\Entity\Store get($primaryKey, $options = [])
  * @method \App\Model\Entity\Store newEntity($data = null, array $options = [])
@@ -41,7 +41,7 @@ class StoresTable extends Table
 
         $this->addBehavior('Timestamp');
 
-        $this->hasMany('Categories', [
+        $this->hasMany('Substores', [
             'foreignKey' => 'store_id'
         ]);
     }

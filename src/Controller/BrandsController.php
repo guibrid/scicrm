@@ -2,6 +2,8 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Box\Spout\Reader\ReaderFactory;
+use Box\Spout\Common\Type;
 
 /**
  * Brands Controller
@@ -51,6 +53,8 @@ class BrandsController extends AppController
         $brand = $this->Brands->newEntity();
         if ($this->request->is('post')) {
             $brand = $this->Brands->patchEntity($brand, $this->request->getData());
+            debug($this->request->getData());
+            die;
             if ($this->Brands->save($brand)) {
                 $this->Flash->success(__('The brand has been saved.'));
 
@@ -103,5 +107,44 @@ class BrandsController extends AppController
         }
 
         return $this->redirect(['action' => 'index']);
+    }
+
+
+    /**
+     * Import method
+     *
+     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     */
+    public function import()
+    {
+      $reader = ReaderFactory::create(Type::CSV); // for CSV files
+      $reader->setFieldDelimiter('|');
+      $reader->open('files/brandList.csv');
+      $i = 0;
+      foreach ($reader->getSheetIterator() as $sheet) {
+
+        foreach ($sheet->getRowIterator() as $key => $productRow) {
+          $i++;
+          // on supprime les espaces avant et après et on renome la key pour l'insertion dans la base
+          $productRow['title'] = trim($productRow[0]);
+          unset($productRow[0]);// Supprimer l'ancien key
+
+          //Recheche si la Brand existe dans la base
+          $query = $this->Brands->find('list')
+                            ->where(['Brands.title =' => $productRow['title']]);
+
+          // Si elle n'existe pas on l'ajoute
+          if( $query->count()===0) { //Compte le nombre de résultat renvoyé
+            $brand = $this->Brands->newEntity();
+            $brand = $this->Brands->patchEntity($brand, $productRow);
+            $insert =$this->Brands->save($brand);
+          }
+
+
+        }
+      }
+      debug('Nombre de ligne traitées: '.$i);
+      debug('Importation terminée');
+      die;
     }
 }

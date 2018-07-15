@@ -2,6 +2,9 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Box\Spout\Reader\ReaderFactory;
+use Box\Spout\Common\Type;
+use Cake\ORM\TableRegistry;
 
 /**
  * Shortbrands Controller
@@ -110,5 +113,57 @@ class ShortbrandsController extends AppController
         }
 
         return $this->redirect(['action' => 'index']);
+    }
+
+    /**
+     * Import method
+     *
+     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     */
+    public function import()
+    {
+      $reader = ReaderFactory::create(Type::CSV); // for CSV files
+      $reader->setFieldDelimiter(';');
+      $reader->open('files/shortbrandslist.csv');
+      $i = 0;
+$u =0;
+      foreach ($reader->getSheetIterator() as $sheet) {
+
+        foreach ($sheet->getRowIterator() as $key => $productRow) {
+
+              $shortbrand['title'] = trim($productRow[0]); // Valeur du shortbrand
+              $brand['title'] = trim($productRow[1]); // Valeur du brand
+
+              if($shortbrand['title'] != $brand['title'] && !empty($shortbrand['title'])) { // Si le shortbrand et la brand sont différents ou vide
+                  //Recherche si shortbrand existe
+                  $query = $this->Shortbrands->find('list')
+                                        ->where(['Shortbrands.title =' => $shortbrand['title']]);
+                  // Si il n'existe pas on l'ajoute
+                  if( $query->count()===0) { //Compte le nombre de résultat renvoyé
+                      //debug('le shortcode n\'existe pas');
+                      // On cherche dans la table brands l'id de la marque correspondante
+                      $brands = TableRegistry::get('Brands');
+                      $brandQuery = $brands->find('all')
+                                            ->where(['Brands.title =' => $brand['title']]);
+
+                        $data['title'] = $shortbrand['title'];
+                        $data['brand_id'] = $brandQuery->first()->id;
+
+                        $newShortbrands = $this->Shortbrands->newEntity();
+                        $newShortbrands = $this->Shortbrands->patchEntity($newShortbrands, $data);
+                        $insert =$this->Shortbrands->save($newShortbrands);
+
+                  }
+
+              }
+
+              $i++;
+
+        }
+      }
+      debug('Nombre de shortcode empty: '.$u);
+      debug('Nombre de ligne traitées: '.$i);
+      debug('Importation terminée');
+      die;
     }
 }

@@ -47,7 +47,7 @@ class SubstoresTable extends Table
             'joinType' => 'INNER'
         ]);
         $this->hasMany('Categories', [
-            'foreignKey' => 'substore_id'
+            'foreignKey' => 'substore_code'
         ]);
     }
 

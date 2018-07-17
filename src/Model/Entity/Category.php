@@ -15,7 +15,8 @@ use Cake\ORM\Entity;
  * @property \Cake\I18n\FrozenTime $created
  * @property \Cake\I18n\FrozenTime $modified
  *
- * @property \App\Model\Entity\Store $store
+ * @property \App\Model\Entity\Substore $substore
+ * @property \App\Model\Entity\Subcategory[] $subcategories
  */
 class Category extends Entity
 {
@@ -37,6 +38,7 @@ class Category extends Entity
         'active' => true,
         'created' => true,
         'modified' => true,
-        'store' => true
+        'substore' => true,
+        'subcategories' => true
     ];
 }

@@ -2,6 +2,8 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Box\Spout\Reader\ReaderFactory;
+use Box\Spout\Common\Type;
 
 /**
  * Substores Controller
@@ -108,5 +110,46 @@ class SubstoresController extends AppController
         }
 
         return $this->redirect(['action' => 'index']);
+    }
+
+    /**
+     * Import method
+     *
+     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     */
+    public function import()
+    {
+      $reader = ReaderFactory::create(Type::CSV); // for CSV files
+      $reader->setFieldDelimiter('|');
+      $reader->open('files/substores.csv');
+      $i = 0;
+      foreach ($reader->getSheetIterator() as $sheet) {
+
+        foreach ($sheet->getRowIterator() as $key => $substoreRow) {
+          $i++;
+
+          $substoreRow['code'] = trim($substoreRow[0]);
+          $substoreRow['title'] = trim($substoreRow[1]);
+          $substoreRow['store_id'] = trim($substoreRow[2]);
+          unset($substoreRow[0], $substoreRow[1], $substoreRow[2]);// Supprimer les anciennes key
+
+          //Recheche si le substore existe dans la base
+          $query = $this->Substores->find('list')
+                            ->where(['Substores.code =' => $substoreRow['code']]);
+
+          // Si elle n'existe pas on l'ajoute
+          if( $query->count()===0) { //Compte le nombre de résultat renvoyé
+            $substore = $this->Substores->newEntity();
+            $substore = $this->Substores->patchEntity($substore, $substoreRow);
+            $insert =$this->Substores->save($substore);
+          } else { // Si elle existe il y a un problème et on debug
+            debug($substoreRow);
+          }
+
+        }
+      }
+      debug('Nombre de ligne traitées: '.$i);
+      debug('Importation terminée');
+      die;
     }
 }

@@ -9,7 +9,7 @@ use Cake\ORM\Entity;
  * @property int $id
  * @property string $code
  * @property string $title
- * @property int $category_code
+ * @property int $category_id
  * @property bool $active
  * @property \Cake\I18n\FrozenTime $created
  * @property \Cake\I18n\FrozenTime $modified
@@ -31,7 +31,7 @@ class Subcategory extends Entity
     protected $_accessible = [
         'code' => true,
         'title' => true,
-        'category_code' => true,
+        'category_id' => true,
         'active' => true,
         'created' => true,
         'modified' => true,

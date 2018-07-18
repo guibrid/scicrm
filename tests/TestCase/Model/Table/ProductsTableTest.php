@@ -26,6 +26,8 @@ class ProductsTableTest extends TestCase
     public $fixtures = [
         'app.products',
         'app.origins',
+        'app.categories',
+        'app.subcategories',
         'app.brands',
         'app.shortbrands',
         'app.shortorigins'
@@ -61,16 +63,6 @@ class ProductsTableTest extends TestCase
      * @return void
      */
     public function testInitialize()
-    {
-        $this->markTestIncomplete('Not implemented yet.');
-    }
-
-    /**
-     * Test beforeMarshal method
-     *
-     * @return void
-     */
-    public function testBeforeMarshal()
     {
         $this->markTestIncomplete('Not implemented yet.');
     }

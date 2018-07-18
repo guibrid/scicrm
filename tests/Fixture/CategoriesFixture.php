@@ -20,8 +20,8 @@ class CategoriesFixture extends TestFixture
         'id' => ['type' => 'integer', 'length' => 11, 'unsigned' => false, 'null' => false, 'default' => null, 'comment' => '', 'autoIncrement' => true, 'precision' => null],
         'code' => ['type' => 'string', 'length' => 255, 'null' => false, 'default' => null, 'collate' => 'utf8_general_ci', 'comment' => '', 'precision' => null, 'fixed' => null],
         'title' => ['type' => 'string', 'length' => 255, 'null' => false, 'default' => null, 'collate' => 'utf8_general_ci', 'comment' => '', 'precision' => null, 'fixed' => null],
-        'type' => ['type' => 'integer', 'length' => 11, 'unsigned' => false, 'null' => false, 'default' => null, 'comment' => '1AL "1": Sec alimentaire; 1NAL "2": Sec non alimentaire; 2AL "3": Surgeler; 3AL "4": Frais (Voir colonne AG) ', 'precision' => null, 'autoIncrement' => null],
-        'substore_id' => ['type' => 'integer', 'length' => 11, 'unsigned' => false, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null, 'autoIncrement' => null],
+        'type' => ['type' => 'string', 'length' => 11, 'null' => false, 'default' => null, 'collate' => 'utf8_general_ci', 'comment' => '1AL "1": Sec alimentaire; 1NAL "2": Sec non alimentaire; 2AL "3": Surgeler; 3AL "4": Frais (Voir colonne AG) ', 'precision' => null, 'fixed' => null],
+        'substore_id' => ['type' => 'integer', 'length' => 11, 'unsigned' => false, 'null' => true, 'default' => null, 'comment' => '', 'precision' => null, 'autoIncrement' => null],
         'active' => ['type' => 'boolean', 'length' => null, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null],
         'created' => ['type' => 'datetime', 'length' => null, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null],
         'modified' => ['type' => 'datetime', 'length' => null, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null],
@@ -50,11 +50,11 @@ class CategoriesFixture extends TestFixture
                 'id' => 1,
                 'code' => 'Lorem ipsum dolor sit amet',
                 'title' => 'Lorem ipsum dolor sit amet',
-                'type' => 1,
+                'type' => 'Lorem ips',
                 'substore_id' => 1,
                 'active' => 1,
-                'created' => '2018-07-16 14:33:40',
-                'modified' => '2018-07-16 14:33:40'
+                'created' => '2018-07-18 06:13:28',
+                'modified' => '2018-07-18 06:13:28'
             ],
         ];
         parent::init();

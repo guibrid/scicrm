@@ -134,21 +134,6 @@ class CategoriesController extends AppController
           $categoriesRow['title'] = trim($categoriesRow[1]);
           $categoriesRow['type'] = trim($categoriesRow[2]);
 
-          switch($categoriesRow['type']) {
-            case '1AL':
-              $categoriesRow['type']=1;
-              break;
-            case '1NAL':
-              $categoriesRow['type']=2;
-              break;
-            case '2AL':
-              $categoriesRow['type']=3;
-              break;
-            case '3AL':
-              $categoriesRow['type']=4;
-              break;
-          }
-
           // On cherche dans la table Substores l'id du substore correspondante
           $substores = TableRegistry::get('Substores');
           $substoreQuery = $substores->find('all')
@@ -164,17 +149,17 @@ class CategoriesController extends AppController
           unset($categoriesRow[0], $categoriesRow[1], $categoriesRow[2], $categoriesRow[3]);// Supprimer les anciennes key
 
           //Recheche si le code de la Category existe dans la base
-          $query = $this->Categories->find('list')
-                            ->where(['code =' => $categoriesRow['code']]);
+          //$query = $this->Categories->find('list')
+                        //    ->where(['code =' => $categoriesRow['code']]);
 
           // Si elle n'existe pas on l'ajoute
-          if( $query->count()===0) { //Compte le nombre de résultat renvoyé
+          //if( $query->count()===0) { //Compte le nombre de résultat renvoyé
             $category = $this->Categories->newEntity();
             $category = $this->Categories->patchEntity($category, $categoriesRow);
             $insert =$this->Categories->save($category);
-          } else { // Si elle existe il y a un problème et on debug
-            debug($categoriesRow);
-          }
+          //} else { // Si elle existe il y a un problème et on debug
+            //debug($categoriesRow);
+          //}
 
         }
       }

@@ -23,8 +23,8 @@ use Cake\ORM\Entity;
  * @property string $origin_id
  * @property float $tva
  * @property string $cdref
- * @property int $category_code
- * @property int $subcategory_code
+ * @property int $category_id
+ * @property int $subcategory_id
  * @property string $entrepot
  * @property string $supplier
  * @property string $qualification
@@ -39,6 +39,8 @@ use Cake\ORM\Entity;
  * @property \Cake\I18n\FrozenTime $modified
  *
  * @property \App\Model\Entity\Origin $origin
+ * @property \App\Model\Entity\Category $category
+ * @property \App\Model\Entity\Subcategory $subcategory
  * @property \App\Model\Entity\Brand $brand
  * @property \App\Model\Entity\Shortbrand[] $shortbrands
  * @property \App\Model\Entity\Shortorigin[] $shortorigins
@@ -72,8 +74,8 @@ class Product extends Entity
         'origin_id' => true,
         'tva' => true,
         'cdref' => true,
-        'category_code' => true,
-        'subcategory_code' => true,
+        'category_id' => true,
+        'subcategory_id' => true,
         'entrepot' => true,
         'supplier' => true,
         'qualification' => true,
@@ -87,6 +89,8 @@ class Product extends Entity
         'created' => true,
         'modified' => true,
         'origin' => true,
+        'category' => true,
+        'subcategory' => true,
         'brand' => true,
         'shortbrands' => true,
         'shortorigins' => true

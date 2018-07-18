@@ -134,17 +134,17 @@ class SubstoresController extends AppController
           unset($substoreRow[0], $substoreRow[1], $substoreRow[2]);// Supprimer les anciennes key
 
           //Recheche si le substore existe dans la base
-          $query = $this->Substores->find('list')
-                            ->where(['Substores.code =' => $substoreRow['code']]);
+          //$query = $this->Substores->find('list')
+                        //    ->where(['Substores.code =' => $substoreRow['code']]);
 
           // Si elle n'existe pas on l'ajoute
-          if( $query->count()===0) { //Compte le nombre de résultat renvoyé
+        //  if( $query->count()===0) { //Compte le nombre de résultat renvoyé
             $substore = $this->Substores->newEntity();
             $substore = $this->Substores->patchEntity($substore, $substoreRow);
             $insert =$this->Substores->save($substore);
-          } else { // Si elle existe il y a un problème et on debug
-            debug($substoreRow);
-          }
+        //  } else { // Si elle existe il y a un problème et on debug
+          //  debug($substoreRow);
+        //  }
 
         }
       }

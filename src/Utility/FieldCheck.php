@@ -7,6 +7,53 @@ use Cake\ORM\TableRegistry;
 
 class FieldCheck
 {
+    //Listes des entrepots avec en array la liste des types possible(frais, sec, surgeles, alimnetaire,...)
+    //Cette liste sert dans la fonction searchcategorie pour associé l'articles à la bonne catégorie
+    private $entrepotType = [
+              //71744 Recherche  id famille where type 1AL ou 1NAL
+              ['71744', ['1AL', '1NAL']],
+              //, 71746 Recherche  id famille where type 1AL ou 1NAL
+              ['71746', ['1AL', '1NAL']],
+              //89063 Recherche  id famille where type 1AL ou
+              ['89063', ['1AL', '1NAL']],
+              ['88642',	['3AL']],
+              ['88884', ['2AL']],
+              ['3520',  ['1AL']],
+              ['3817',	['2AL']],
+              ['4174',  ['1AL']],
+              ['5587',	['2AL']],
+              ['6828',  ['2AL']],
+              ['7363',	['2AL']],
+              ['9897',	['2AL']],
+              ['10602',	['2AL']],
+              ['10734',	['1AL']],
+              ['13011',	['2AL']],
+              ['13040',	['1NAL']],
+              ['16055',	['1AL']],
+              ['16327',	['2AL']],
+              ['17764',	['2AL']],
+              ['18266',	['1AL']],
+              ['18862',	['1AL']],
+              ['19593',	['1AL']],
+              ['20224',	['1AL']],
+              ['20225',	['1AL']],
+              ['23788',	['2AL']],
+              ['24472',	['2AL']],
+              ['33261',	['2AL']],
+              ['36207',	['2AL']],
+              ['75676',	['1AL']],
+              ['85869',	['2AL']],
+              ['88853',	['2AL']],
+              ['90433',	['2AL']],
+              ['90665',	['2AL']],
+              ['90678',	['2AL']],
+              ['91700',	['2AL']],
+              ['97028',	['2AL']],
+              ['98099',	['2AL']],
+              ['98293',	['2AL']],
+              ['98653',	['2AL']],
+              ['99132',	['2AL']],
+              ['99197',	['2AL']]];
 
     public function isValidDate($field, $value, $product_code)
     {
@@ -101,14 +148,36 @@ class FieldCheck
         return null;
     }
 
-    //Recherche le category code
-    public function searchCategory($field, $value, $product_code)
+    /**
+     * Recherche Category id method
+     * Rechercher la category_id en fonction du code categorie et du code entrepot
+     * @param string| $field = nom du champs traité
+     * @param int| $value = code de la category
+     * @param int| $entrepot = code le entrepot
+     * @param string| $product_code = code article du produit
+     * @return int|null category_id
+     */
+    public function searchCategory($field, $value, $entrepot, $product_code)
     {
-        //Verifier dans la table categories que la valeur existe
+        //Recherche le code entrepot dans la liste entrepotType
+        foreach($this->entrepotType as $types){
+          if($types[0] == $entrepot){
+            foreach($types[1] as $type){ // On récupere les valeurs du type d'entrepot
+              $typeList[]['type'] =  $type;
+            }
+          }
+        }
+
+        //Recherche le code categorie et le type associé au product
         $categorySearch = TableRegistry::get('categories');
-        $category = $categorySearch->find()->where(['code =' => $value])->first();
-        if (!is_null($category)) {  // Si non trouve une correspondance dans la table categories
-          return $category->code;
+        $category = $categorySearch->find()
+                                   ->where(['code =' => $value,
+                                            'OR'     => $typeList])
+                                   ->first();
+
+        if (!is_null($category)) {
+           // Si on trouve  une correspondance dans la table categories on return l'id de la categorie
+          return $category->id;
         } else {
           //Sinon on créée une alerte Category inconu et on return null pour la valeur
           $warning = new Warnings;

@@ -10,11 +10,12 @@ use ArrayObject;
 use Cake\Datasource\EntityInterface;
 use App\Utility\ValidatorCheck;
 
-
 /**
  * Products Model
  *
  * @property \App\Model\Table\OriginsTable|\Cake\ORM\Association\BelongsTo $Origins
+ * @property \App\Model\Table\CategoriesTable|\Cake\ORM\Association\BelongsTo $Categories
+ * @property \App\Model\Table\SubcategoriesTable|\Cake\ORM\Association\BelongsTo $Subcategories
  * @property \App\Model\Table\BrandsTable|\Cake\ORM\Association\BelongsTo $Brands
  * @property \App\Model\Table\ShortbrandsTable|\Cake\ORM\Association\BelongsToMany $Shortbrands
  * @property \App\Model\Table\ShortoriginsTable|\Cake\ORM\Association\BelongsToMany $Shortorigins
@@ -30,7 +31,6 @@ use App\Utility\ValidatorCheck;
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
-
 class ProductsTable extends Table
 {
 
@@ -51,13 +51,16 @@ class ProductsTable extends Table
         $this->addBehavior('Timestamp');
 
         $this->belongsTo('Origins', [
-            'foreignKey' => 'origin_id',
-            //'joinType' => 'INNER'
+            'foreignKey' => 'origin_id'
+        ]);
+        $this->belongsTo('Categories', [
+            'foreignKey' => 'category_id'
+        ]);
+        $this->belongsTo('Subcategories', [
+            'foreignKey' => 'subcategory_id'
         ]);
         $this->belongsTo('Brands', [
-            'foreignKey' => 'brand_id',
-            //'joinType' => 'INNER'
-
+            'foreignKey' => 'brand_id'
         ]);
         $this->belongsToMany('Shortbrands', [
             'foreignKey' => 'product_id',
@@ -78,7 +81,6 @@ class ProductsTable extends Table
       $validatorCheck->validate($data); // Validation personnalisé des données
     }
 
-
     /**
      * Returns a rules checker object that will be used for validating
      * application integrity.
@@ -89,6 +91,8 @@ class ProductsTable extends Table
     public function buildRules(RulesChecker $rules)
     {
         $rules->add($rules->existsIn(['origin_id'], 'Origins'));
+        $rules->add($rules->existsIn(['category_id'], 'Categories'));
+        $rules->add($rules->existsIn(['subcategory_id'], 'Subcategories'));
         $rules->add($rules->existsIn(['brand_id'], 'Brands'));
 
         return $rules;

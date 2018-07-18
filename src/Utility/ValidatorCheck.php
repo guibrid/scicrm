@@ -120,9 +120,9 @@ public function validate($data) {
       };
       break;
 
-      case 'category_code': // entier, no empty(alert)
+      case 'category_id': // entier, no empty(alert)
         // Recherche de le code dans les tables categories
-        $data['category_code'] = $fieldCheck->searchCategory($key, $row, $data['code']);
+        $data['category_id'] = $fieldCheck->searchCategory($key, $row,$data['entrepot'], $data['code']);
         break;
 
       case 'subcategory_code': // entier, no empty(alert)
@@ -184,8 +184,8 @@ public function validate($data) {
       $subcategories = new SubcategoriesController; //Call le Array des subcategory lier au vin
       $listeSubcategoriVin = $subcategories->subcategoriesVin;
       //Renomer la Marques en fonction du cas particulier des subcategories et Qualification lier au Vin
-      //TODO A tester quand la table categories et subcategory seront populate
-      $fieldCheck->checkVins($key, $row, $data['code'], $data['subcategory_code'], $data['qualification'], $listeSubcategoriVin);
+      //TODO A tester quand la table categories et subcategory seront populate et activate fonction ci-dessous
+      //$fieldCheck->checkVins($key, $row, $data['code'], $data['subcategory_code'], $data['qualification'], $listeSubcategoriVin);
 
       // Recherche de l'id dans les tables brands et shortbrands
       $data['brand_id'] = $fieldCheck->searchBrands($key, $row, $data['code']);

@@ -10,6 +10,7 @@ use Cake\Validation\Validator;
  * Subcategories Model
  *
  * @property \App\Model\Table\CategoriesTable|\Cake\ORM\Association\BelongsTo $Categories
+ * @property |\Cake\ORM\Association\HasMany $Products
  *
  * @method \App\Model\Entity\Subcategory get($primaryKey, $options = [])
  * @method \App\Model\Entity\Subcategory newEntity($data = null, array $options = [])
@@ -44,6 +45,9 @@ class SubcategoriesTable extends Table
         $this->belongsTo('Categories', [
             'foreignKey' => 'category_id',
             'joinType' => 'INNER'
+        ]);
+        $this->hasMany('Products', [
+            'foreignKey' => 'subcategory_id'
         ]);
     }
 

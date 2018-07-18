@@ -10,6 +10,7 @@ use Cake\Validation\Validator;
  * Categories Model
  *
  * @property \App\Model\Table\SubstoresTable|\Cake\ORM\Association\BelongsTo $Substores
+ * @property |\Cake\ORM\Association\HasMany $Products
  * @property \App\Model\Table\SubcategoriesTable|\Cake\ORM\Association\HasMany $Subcategories
  *
  * @method \App\Model\Entity\Category get($primaryKey, $options = [])
@@ -43,8 +44,10 @@ class CategoriesTable extends Table
         $this->addBehavior('Timestamp');
 
         $this->belongsTo('Substores', [
-            'foreignKey' => 'substore_id',
-            'joinType' => 'INNER'
+            'foreignKey' => 'substore_id'
+        ]);
+        $this->hasMany('Products', [
+            'foreignKey' => 'category_id'
         ]);
         $this->hasMany('Subcategories', [
             'foreignKey' => 'category_id'
@@ -76,7 +79,8 @@ class CategoriesTable extends Table
             ->notEmpty('title');
 
         $validator
-            ->integer('type')
+            ->scalar('type')
+            ->maxLength('type', 11)
             ->requirePresence('type', 'create')
             ->notEmpty('type');
 

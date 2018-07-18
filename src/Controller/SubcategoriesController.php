@@ -147,17 +147,17 @@ class SubcategoriesController extends AppController
 
 
           //Recheche si le code de la subcategory existe dans la base
-          $query = $this->Subcategories->find('list')
-                            ->where(['code =' => $subcategoriesRow['code']]);
+          //$query = $this->Subcategories->find('list')
+          //                  ->where(['code =' => $subcategoriesRow['code']]);
 
           // Si elle n'existe pas on l'ajoute
-          if( $query->count()===0) { //Compte le nombre de résultat renvoyé
+          //if( $query->count()===0) { //Compte le nombre de résultat renvoyé
             $subcategory = $this->Subcategories->newEntity();
             $subcategory = $this->Subcategories->patchEntity($subcategory, $subcategoriesRow);
             $insert =$this->Subcategories->save($subcategory);
-          } else { // Si elle existe il y a un problème et on debug
-            debug($subcategoriesRow);
-          }
+          //} else { // Si elle existe il y a un problème et on debug
+            //debug($subcategoriesRow);
+          //}
 
         }
       }

@@ -51,8 +51,8 @@ class SubcategoriesFixture extends TestFixture
                 'title' => 'Lorem ipsum dolor sit amet',
                 'category_id' => 1,
                 'active' => 1,
-                'created' => '2018-07-16 14:35:09',
-                'modified' => '2018-07-16 14:35:09'
+                'created' => '2018-07-18 06:13:37',
+                'modified' => '2018-07-18 06:13:37'
             ],
         ];
         parent::init();

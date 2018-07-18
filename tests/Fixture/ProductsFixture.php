@@ -34,8 +34,8 @@ class ProductsFixture extends TestFixture
         'origin_id' => ['type' => 'string', 'length' => 255, 'null' => true, 'default' => null, 'collate' => 'utf8_general_ci', 'comment' => '', 'precision' => null, 'fixed' => null],
         'tva' => ['type' => 'float', 'length' => null, 'precision' => null, 'unsigned' => false, 'null' => true, 'default' => null, 'comment' => ''],
         'cdref' => ['type' => 'string', 'length' => 255, 'null' => true, 'default' => null, 'collate' => 'utf8_general_ci', 'comment' => '', 'precision' => null, 'fixed' => null],
-        'category_code' => ['type' => 'integer', 'length' => 11, 'unsigned' => false, 'null' => true, 'default' => null, 'comment' => '', 'precision' => null, 'autoIncrement' => null],
-        'subcategory_code' => ['type' => 'integer', 'length' => 11, 'unsigned' => false, 'null' => true, 'default' => null, 'comment' => '', 'precision' => null, 'autoIncrement' => null],
+        'category_id' => ['type' => 'integer', 'length' => 11, 'unsigned' => false, 'null' => true, 'default' => null, 'comment' => '', 'precision' => null, 'autoIncrement' => null],
+        'subcategory_id' => ['type' => 'integer', 'length' => 11, 'unsigned' => false, 'null' => true, 'default' => null, 'comment' => '', 'precision' => null, 'autoIncrement' => null],
         'entrepot' => ['type' => 'string', 'length' => 255, 'null' => true, 'default' => null, 'collate' => 'utf8_general_ci', 'comment' => '', 'precision' => null, 'fixed' => null],
         'supplier' => ['type' => 'string', 'length' => 255, 'null' => true, 'default' => null, 'collate' => 'utf8_general_ci', 'comment' => '', 'precision' => null, 'fixed' => null],
         'qualification' => ['type' => 'string', 'length' => 255, 'null' => true, 'default' => null, 'collate' => 'utf8_general_ci', 'comment' => '', 'precision' => null, 'fixed' => null],
@@ -51,8 +51,8 @@ class ProductsFixture extends TestFixture
         '_indexes' => [
             'fkey_origin_id' => ['type' => 'index', 'columns' => ['origin_id'], 'length' => []],
             'fkey_brand_id' => ['type' => 'index', 'columns' => ['brand_id'], 'length' => []],
-            'fkey_category_code' => ['type' => 'index', 'columns' => ['category_code'], 'length' => []],
-            'fkey_subcategory_code' => ['type' => 'index', 'columns' => ['subcategory_code'], 'length' => []],
+            'fkey_category_id' => ['type' => 'index', 'columns' => ['category_id'], 'length' => []],
+            'fkey_subcategory_id' => ['type' => 'index', 'columns' => ['subcategory_id'], 'length' => []],
         ],
         '_constraints' => [
             'primary' => ['type' => 'primary', 'columns' => ['id'], 'length' => []],
@@ -82,7 +82,7 @@ class ProductsFixture extends TestFixture
                 'uv' => 'Lorem ipsum dolor sit amet',
                 'poids' => 1,
                 'volume' => 1,
-                'dlv' => '2018-07-11',
+                'dlv' => '2018-07-18',
                 'duree_vie' => 1,
                 'gencod' => 1,
                 'douanier' => 1,
@@ -90,8 +90,8 @@ class ProductsFixture extends TestFixture
                 'origin_id' => 'Lorem ipsum dolor sit amet',
                 'tva' => 1,
                 'cdref' => 'Lorem ipsum dolor sit amet',
-                'category_code' => 1,
-                'subcategory_code' => 1,
+                'category_id' => 1,
+                'subcategory_id' => 1,
                 'entrepot' => 'Lorem ipsum dolor sit amet',
                 'supplier' => 'Lorem ipsum dolor sit amet',
                 'qualification' => 'Lorem ipsum dolor sit amet',
@@ -102,8 +102,8 @@ class ProductsFixture extends TestFixture
                 'assortiment' => 'Lorem ipsum dolor sit amet',
                 'brand_id' => 'Lorem ipsum dolor sit amet',
                 'active' => 1,
-                'created' => '2018-07-11 14:47:24',
-                'modified' => '2018-07-11 14:47:24'
+                'created' => '2018-07-18 06:13:43',
+                'modified' => '2018-07-18 06:13:43'
             ],
         ];
         parent::init();

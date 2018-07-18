@@ -9,7 +9,7 @@ use Cake\ORM\Entity;
  * @property int $id
  * @property string $code
  * @property string $title
- * @property int $type
+ * @property string $type
  * @property int $substore_id
  * @property bool $active
  * @property \Cake\I18n\FrozenTime $created

@@ -192,26 +192,29 @@ class FieldCheck
     public function searchSubcategory($field, $value, $entrepot, $product_code)
     {
 
-        //Recherche le type d'entrepot dans la liste entrepotType 1AL, 2NAL,...
+        //Recherche le type d'entrepot correspondant à l'article dans la liste entrepotType 1AL, 2NAL,...
         $typeList = $this->typeEntrepot($entrepot);
-        debug($typeList);
 
-
-        //Verifier dans la table subcategories que la valeur existe
+        //Verifier dans la table subcategories que le code subcategory existe
         $subcategorySearch = TableRegistry::get('subcategories');
         $subcategory = $subcategorySearch->find()
-                                         ->where(['Subcategories.code =' => '23910']);
-                                         //->contain(['Categories']);
-                                         debug($subcategory);
-                                         die;
-        if (!is_null($subcategory)) {  // Si non trouve une correspondance dans la table subcategories
-          return $subcategory->code;
-        } else {
-          //Sinon on créée une alerte subCategory inconu et on return null pour la valeur
-          $warning = new Warnings;
-          $warning->insert('Ce code subcatégorie n\'existe pas dans la table subcategories', $product_code, $field, $value);
-          return null;
-        }
+                                         ->where(['Subcategories.code =' => $value]);
+        //Et on ne fait resortir que la subcategory qui match avec le type(1AL,2AL,..) de categorie associé
+        $subcategory->matching('Categories',
+                                function ($q) use ($typeList) {
+                                     return $q->where(['OR' => $typeList]);
+                                 });
+
+       // Si on trouve 0 ou plus d'une correspondance alrte car ce n'est pas normal
+       if($subcategory->count() != 1) {
+         $warning = new Warnings;
+         $warning->insert('Ce code subcatégorie n\'existe pas, ou est en double', $product_code, $field, $value);
+         return null;
+       //Sinon retourne l'id de la subcategory correspondante
+       } else {
+         return $subcategory->first()->id;
+       }
+
     }
 
     //Recherche de brands

@@ -90,10 +90,10 @@ class ProductsTable extends Table
      */
     public function buildRules(RulesChecker $rules)
     {
-        $rules->add($rules->existsIn(['origin_id'], 'Origins'));
-        $rules->add($rules->existsIn(['category_id'], 'Categories'));
-        $rules->add($rules->existsIn(['subcategory_id'], 'Subcategories'));
-        $rules->add($rules->existsIn(['brand_id'], 'Brands'));
+        //$rules->add($rules->existsIn(['origin_id'], 'Origins'));
+        //$rules->add($rules->existsIn(['category_id'], 'Categories'));
+        //$rules->add($rules->existsIn(['subcategory_id'], 'Subcategories'));
+        //$rules->add($rules->existsIn(['brand_id'], 'Brands'));
 
         return $rules;
     }

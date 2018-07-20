@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Client :  127.0.0.1
--- Généré le :  Mer 11 Juillet 2018 à 16:18
+-- Généré le :  Mer 18 Juillet 2018 à 10:09
 -- Version du serveur :  5.7.14
 -- Version de PHP :  7.0.10
 
@@ -43,8 +43,8 @@ CREATE TABLE `categories` (
   `id` int(11) NOT NULL,
   `code` varchar(255) NOT NULL,
   `title` varchar(255) NOT NULL,
-  `type` int(11) NOT NULL COMMENT '1AL "1": Sec alimentaire; 1NAL "2": Sec non alimentaire; 2AL "3": Surgeler; 3AL "4": Frais (Voir colonne AG) ',
-  `store_id` int(11) NOT NULL,
+  `type` varchar(11) NOT NULL COMMENT '1AL "1": Sec alimentaire; 1NAL "2": Sec non alimentaire; 2AL "3": Surgeler; 3AL "4": Frais (Voir colonne AG) ',
+  `substore_id` int(11) DEFAULT NULL,
   `active` tinyint(1) NOT NULL,
   `created` datetime NOT NULL,
   `modified` datetime NOT NULL
@@ -87,8 +87,8 @@ CREATE TABLE `products` (
   `origin_id` varchar(255) DEFAULT NULL,
   `tva` double DEFAULT NULL,
   `cdref` varchar(255) DEFAULT NULL,
-  `category_code` int(11) DEFAULT NULL,
-  `subcategory_code` int(11) DEFAULT NULL,
+  `category_id` int(11) DEFAULT NULL,
+  `subcategory_id` int(11) DEFAULT NULL,
   `entrepot` varchar(255) DEFAULT NULL,
   `supplier` varchar(255) DEFAULT NULL,
   `qualification` varchar(255) DEFAULT NULL,
@@ -182,8 +182,23 @@ CREATE TABLE `subcategories` (
   `id` int(11) NOT NULL,
   `code` varchar(255) NOT NULL,
   `title` varchar(255) NOT NULL,
-  `category_code` int(11) DEFAULT NULL,
+  `category_id` int(11) NOT NULL,
   `active` tinyint(1) NOT NULL,
+  `created` datetime NOT NULL,
+  `modified` datetime NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `substores`
+--
+
+CREATE TABLE `substores` (
+  `id` int(11) NOT NULL,
+  `code` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `store_id` int(11) NOT NULL,
   `created` datetime NOT NULL,
   `modified` datetime NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -220,7 +235,7 @@ ALTER TABLE `brands`
 --
 ALTER TABLE `categories`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fkey_store_id` (`store_id`);
+  ADD KEY `fkey_substore_id` (`substore_id`);
 
 --
 -- Index pour la table `origins`
@@ -235,8 +250,8 @@ ALTER TABLE `products`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fkey_origin_id` (`origin_id`),
   ADD KEY `fkey_brand_id` (`brand_id`),
-  ADD KEY `fkey_category_code` (`category_code`),
-  ADD KEY `fkey_subcategory_code` (`subcategory_code`);
+  ADD KEY `fkey_category_id` (`category_id`),
+  ADD KEY `fkey_subcategory_id` (`subcategory_id`);
 
 --
 -- Index pour la table `shortbrands`
@@ -278,7 +293,15 @@ ALTER TABLE `stores`
 -- Index pour la table `subcategories`
 --
 ALTER TABLE `subcategories`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fkey_category_id` (`category_id`);
+
+--
+-- Index pour la table `substores`
+--
+ALTER TABLE `substores`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fkey_store_id` (`store_id`);
 
 --
 -- Index pour la table `warnings`

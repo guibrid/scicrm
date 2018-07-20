@@ -64,21 +64,13 @@ class SubcategoriesTable extends Table
             ->allowEmpty('id', 'create');
 
         $validator
-            ->scalar('code')
-            ->maxLength('code', 255)
-            ->requirePresence('code', 'create')
-            ->notEmpty('code');
+            ->allowEmpty('code');
 
         $validator
-            ->scalar('title')
-            ->maxLength('title', 255)
-            ->requirePresence('title', 'create')
-            ->notEmpty('title');
+            ->allowEmpty('title');
 
         $validator
-            ->boolean('active')
-            ->requirePresence('active', 'create')
-            ->notEmpty('active');
+            ->allowEmpty('active');
 
         return $validator;
     }
@@ -92,7 +84,7 @@ class SubcategoriesTable extends Table
      */
     public function buildRules(RulesChecker $rules)
     {
-        $rules->add($rules->existsIn(['category_id'], 'Categories'));
+        //$rules->add($rules->existsIn(['category_id'], 'Categories'));
 
         return $rules;
     }

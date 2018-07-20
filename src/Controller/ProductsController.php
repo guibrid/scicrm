@@ -33,7 +33,7 @@ class ProductsController extends AppController
             'tva',
             'cdref',
             'category_id',
-            'subcategory_code',
+            'subcategory_id',
             'entrepot',
             'supplier',
             'qualification',

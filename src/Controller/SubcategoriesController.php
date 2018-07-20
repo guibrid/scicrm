@@ -114,9 +114,14 @@ class SubcategoriesController extends AppController
     }
 
     /**
-     * Import method
-     *
-     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     * Importation initial des Subcategory method
+     * Via un fichier CSV, importer toutes les subcategory en liaison avec leur category associée
+     * Paramettre du fichier CSV
+     * @param int| code = code de la subcategory
+     * @param string| title = désignation
+     * @param string| type = 1AL, 2AL, 1NAL,...
+     * @param int| code de la categorie
+     * @return true| Insertion dans la table subcategories de la liste
      */
     public function import()
     {
@@ -129,35 +134,23 @@ class SubcategoriesController extends AppController
         foreach ($sheet->getRowIterator() as $key => $subcategoriesRow) {
           $i++;
 
-            $subcategoriesRow['code'] = trim($subcategoriesRow[0]);
-            $subcategoriesRow['title'] = trim($subcategoriesRow[1]);
-            // On cherche dans la table categories l'id de la categorie correspondante
+            $subcategoriesRow['code'] = trim($subcategoriesRow[0]); // Code de la subcategory
+            $subcategoriesRow['title'] = trim($subcategoriesRow[1]); // Désignation
+            $subcategoriesRow['type'] = trim($subcategoriesRow[2]); // type
+            // On cherche dans la table categories l'id de la categorie correspondante avec le code category ET le type
             $categories = TableRegistry::get('Categories');
             $categoryQuery = $categories->find('all')
-                                  ->where(['code =' => $subcategoriesRow[2]]);
+                                  ->where(['code =' => $subcategoriesRow[3],
+                                           'type =' => $subcategoriesRow['type']]);
             //Et on l'associe au champs category_id
             $subcategoriesRow['category_id'] = $categoryQuery->first()->id;
-            //Si la categorie n'existe pas on debug
-            if (is_null($subcategoriesRow['category_id'])){
-                debug($subcategoriesRow);
-            }
-
             $subcategoriesRow['active'] = '1';
             unset($subcategoriesRow[0], $subcategoriesRow[1], $subcategoriesRow[2]);// Supprimer les anciennes key
 
-
-          //Recheche si le code de la subcategory existe dans la base
-          //$query = $this->Subcategories->find('list')
-          //                  ->where(['code =' => $subcategoriesRow['code']]);
-
-          // Si elle n'existe pas on l'ajoute
-          //if( $query->count()===0) { //Compte le nombre de résultat renvoyé
+            // On enregistre la subcategory dans la base
             $subcategory = $this->Subcategories->newEntity();
             $subcategory = $this->Subcategories->patchEntity($subcategory, $subcategoriesRow);
             $insert =$this->Subcategories->save($subcategory);
-          //} else { // Si elle existe il y a un problème et on debug
-            //debug($subcategoriesRow);
-          //}
 
         }
       }

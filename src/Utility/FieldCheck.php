@@ -159,14 +159,8 @@ class FieldCheck
      */
     public function searchCategory($field, $value, $entrepot, $product_code)
     {
-        //Recherche le code entrepot dans la liste entrepotType
-        foreach($this->entrepotType as $types){
-          if($types[0] == $entrepot){
-            foreach($types[1] as $type){ // On récupere les valeurs du type d'entrepot
-              $typeList[]['type'] =  $type;
-            }
-          }
-        }
+        //Recherche le type d'entrepot dans la liste entrepotType 1AL, 2NAL,...
+        $typeList = $this->typeEntrepot($entrepot);
 
         //Recherche le code categorie et le type associé au product
         $categorySearch = TableRegistry::get('categories');
@@ -186,12 +180,30 @@ class FieldCheck
         }
     }
 
-    //Recherche le subcategory code
-    public function searchSubcategory($field, $value, $product_code)
+    /**
+     * Recherche Subcategory id method
+     * Rechercher la subcategory_id en fonction du code subcategorie et du code entrepot de la category
+     * @param string| $field = nom du champs traité
+     * @param int| $value = code de la subcategory
+     * @param int| $entrepot = code le entrepot
+     * @param string| $product_code = code article du produit
+     * @return int|null subcategory_id
+     */
+    public function searchSubcategory($field, $value, $entrepot, $product_code)
     {
+
+        //Recherche le type d'entrepot dans la liste entrepotType 1AL, 2NAL,...
+        $typeList = $this->typeEntrepot($entrepot);
+        debug($typeList);
+
+
         //Verifier dans la table subcategories que la valeur existe
         $subcategorySearch = TableRegistry::get('subcategories');
-        $subcategory = $subcategorySearch->find()->where(['code =' => $value])->first();
+        $subcategory = $subcategorySearch->find()
+                                         ->where(['Subcategories.code =' => '23910']);
+                                         //->contain(['Categories']);
+                                         debug($subcategory);
+                                         die;
         if (!is_null($subcategory)) {  // Si non trouve une correspondance dans la table subcategories
           return $subcategory->code;
         } else {
@@ -295,5 +307,32 @@ class FieldCheck
         }
         return $value;
     }
+
+    /**
+     * Recherche Type entrepot method
+     * en fonction du code entrepot renoie la liste des types de cet entrepot
+     * Exemple 1AL, 2AL, 1NAL,...
+     * @param string| $codeEntrepot = code de l'entrepot du product
+     * @return array|false $typeList
+     */
+    public function typeEntrepot($codeEntrepot)
+    {
+        foreach($this->entrepotType as $types){
+          // Rechercher le code entrepot dans la list entrepotType
+          if($types[0] == $codeEntrepot){
+              foreach($types[1] as $type){
+                // On récupere les valeurs du type d'entrepot
+                $typeList[]['type'] =  $type;
+              }
+              return $typeList;
+          }
+        }
+
+        return false;
+    }
+
+
+
+
 
 }

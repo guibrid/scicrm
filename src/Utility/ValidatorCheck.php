@@ -122,12 +122,12 @@ public function validate($data) {
 
       case 'category_id': // entier, no empty(alert)
         // Recherche de le code dans les tables categories
-        $data['category_id'] = $fieldCheck->searchCategory($key, $row,$data['entrepot'], $data['code']);
+        $data['category_id'] = $fieldCheck->searchCategory($key, $row, $data['entrepot'], $data['code']);
         break;
 
-      case 'subcategory_code': // entier, no empty(alert)
+      case 'subcategory_id': // entier, no empty(alert)
         // Recherche de le code dans les tables subcategories
-        $data['subcategory_code'] = $fieldCheck->searchSubcategory($key, $row, $data['code']);
+        $data['subcategory_id'] = $fieldCheck->searchSubcategory($key, $row, $data['entrepot'], $data['code']);
 
         break;
 

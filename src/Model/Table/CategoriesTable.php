@@ -67,27 +67,16 @@ class CategoriesTable extends Table
             ->allowEmpty('id', 'create');
 
         $validator
-            ->scalar('code')
-            ->maxLength('code', 255)
-            ->requirePresence('code', 'create')
-            ->notEmpty('code');
+            ->allowEmpty('code');
 
         $validator
-            ->scalar('title')
-            ->maxLength('title', 255)
-            ->requirePresence('title', 'create')
-            ->notEmpty('title');
+            ->allowEmpty('title');
 
         $validator
-            ->scalar('type')
-            ->maxLength('type', 11)
-            ->requirePresence('type', 'create')
-            ->notEmpty('type');
+            ->allowEmpty('type');
 
         $validator
-            ->boolean('active')
-            ->requirePresence('active', 'create')
-            ->notEmpty('active');
+            ->allowEmpty('active');
 
         return $validator;
     }
@@ -101,7 +90,7 @@ class CategoriesTable extends Table
      */
     public function buildRules(RulesChecker $rules)
     {
-        $rules->add($rules->existsIn(['substore_id'], 'Substores'));
+        //$rules->add($rules->existsIn(['substore_id'], 'Substores'));
 
         return $rules;
     }

@@ -27,6 +27,10 @@ public function validate($data) {
         };
         break;
 
+        case 'title': // alphanumeric, empty
+          $data['title']= utf8_encode ( $data['title'] );
+          break;
+
       case 'pcb': // entier,  no empty
         if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->isVide($key, $row, $data['code'])) {
           // Check si entier ou vide
@@ -102,6 +106,7 @@ public function validate($data) {
         break;
 
       case 'origin_id': // entier , no empty(alert)
+          $row = utf8_encode ($data['origin_id']); //Convertir en UFT8
           // Recherche de l'id dans les tables origins et shortorigins
           $data['origin_id'] = $fieldCheck->searchOrigin($key, $row, $data['code']);
         break;
@@ -121,11 +126,13 @@ public function validate($data) {
       break;
 
       case 'category_id': // entier, no empty(alert)
+        $data['category_id']= utf8_encode ( $data['category_id'] );
         // Recherche de le code dans les tables categories
         $data['category_id'] = $fieldCheck->searchCategory($key, $row, $data['entrepot'], $data['code']);
         break;
 
       case 'subcategory_id': // entier, no empty(alert)
+        $data['subcategory_id']= utf8_encode ( $data['subcategory_id'] );
         // Recherche de le code dans les tables subcategories
         $data['subcategory_id'] = $fieldCheck->searchSubcategory($key, $row, $data['entrepot'], $data['code']);
 
@@ -180,12 +187,13 @@ public function validate($data) {
         break;
 
       case 'brand_id': // entier, no empty
+      $row= utf8_encode ($data['brand_id']); //Convertir en UFT8
       //Gestion du cas particuliers des marques de vin
       $subcategories = new SubcategoriesController; //Call le Array des subcategory lier au vin
       $listeSubcategoriVin = $subcategories->subcategoriesVin;
       //Renomer la Marques en fonction du cas particulier des subcategories et Qualification lier au Vin
       //TODO A tester quand la table categories et subcategory seront populate et activate fonction ci-dessous
-      //$fieldCheck->checkVins($key, $row, $data['code'], $data['subcategory_code'], $data['qualification'], $listeSubcategoriVin);
+      $fieldCheck->checkVins($key, $row, $data['code'], $data['subcategory_id'], $data['qualification'], $listeSubcategoriVin);
 
       // Recherche de l'id dans les tables brands et shortbrands
       $data['brand_id'] = $fieldCheck->searchBrands($key, $row, $data['code']);

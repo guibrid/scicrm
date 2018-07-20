@@ -128,6 +128,7 @@ class FieldCheck
     //Recherche de l'origine
     public function searchOrigin($field, $value, $product_code)
     {
+
         //Verifier dans la table origins que la valeur existe
         $originSearch = TableRegistry::get('origins');
         $origin = $originSearch->find()->where(['title =' => $value])->first();
@@ -240,19 +241,30 @@ class FieldCheck
         return null;
     }
 
-    //Vérification Marques pour les vins
-    public function checkVins($field, $value, $product_code, $subcategory_code, $qualification, $subcategoriesVin)
+    /**
+     * Verification des marques pour les vins method
+     * Gestion particuliere des marques pour les vins
+     * Marques "Vin" pour tous les articles ayant un code "Qualification" A.
+     * Pour code Qualification P indiquer 1er Prix.
+     * Pour code Qualification M indiquer MDD sauf pour la marque Reflets de France qu'il faut indiquer en toutes lettres.
+     * @param string| $field = nom du champs traité
+     * @param string| $value = libelle de la marque
+     * @param string| $product_code = code du produit
+     * @param int| $subcategory_code = code de la subcategory
+     * @param string| $qualification = P, A ou M
+     * @param array| $subcategoriesVin = list des subcategories lié aux vins
+     * @return string|null libelle de la marque modifié ou pas
+     */
+    public function checkVins($field, $value, $product_code, $subcategory_id, $qualification, $subcategoriesVin)
     {
-      /**
-      *
-      * Marques "Vin" pour tous les articles ayant un code "Qualification" A.
-      * Pour code Qualification P indiquer 1er Prix.
-      * Pour code Qualification M indiquer MDD sauf pour la marque Reflets de France qu'il faut indiquer en toutes lettres.
-      *
-      **/
-        if (!is_null($subcategory_code) && !is_null($qualification)) {
 
-          if (in_array($subcategory_code, $subcategoriesVin)) {
+        if (!is_null($subcategory_id) && !is_null($qualification)) {
+
+          //Recherche dans subcategories le code correspondant l'id de la subcategorie
+          $subcategoriesSearch = TableRegistry::get('Subcategories');
+          $subcategory = $subcategoriesSearch->find()->where(['id =' => $subcategory_id])->first();
+          // TODO Si les subcat de vin peuvent etre multiple faire un matching avec les categories
+          if (in_array($subcategory->code, $subcategoriesVin)) {
 
             switch ($qualification) {
             case 'P':

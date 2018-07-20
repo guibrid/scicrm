@@ -2,6 +2,8 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Box\Spout\Reader\ReaderFactory;
+use Box\Spout\Common\Type;
 
 /**
  * Origins Controller
@@ -103,5 +105,45 @@ class OriginsController extends AppController
         }
 
         return $this->redirect(['action' => 'index']);
+    }
+
+    /**
+     * Import method
+     *
+     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     */
+    public function import()
+    {
+      $reader = ReaderFactory::create(Type::CSV); // for CSV files
+      $reader->setFieldDelimiter('|');
+      $reader->open('files/originList.csv');
+      $i = 0;
+      foreach ($reader->getSheetIterator() as $sheet) {
+
+        foreach ($sheet->getRowIterator() as $key => $originRow) {
+          $i++;
+          // on supprime les espaces avant et après et on renome la key pour l'insertion dans la base
+          $originRow['title'] = trim($originRow[0]);
+          $originRow['title']= utf8_encode ( $originRow['title'] );
+          unset($originRow[0]);// Supprimer l'ancien key
+
+          //Recheche si la Brand existe dans la base
+          $query = $this->Origins->find('list')
+                            ->where(['Origins.title =' => $originRow['title']]);
+
+          // Si elle n'existe pas on l'ajoute
+          if( $query->count()===0) { //Compte le nombre de résultat renvoyé
+            $origin = $this->Origins->newEntity();
+            $origin = $this->Origins->patchEntity($origin, $originRow);
+            $insert =$this->Origins->save($origin);
+          }
+
+
+
+        }
+      }
+      debug('Nombre de ligne traitées: '.$i);
+      debug('Importation terminée');
+      die;
     }
 }

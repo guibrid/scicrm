@@ -357,6 +357,24 @@ class FieldCheck
         return false;
     }
 
+    /**
+     * sanityseData method
+     * Supprimer les espaces de début et de fin. Verifier si la valeur ne contient pas uniquement des espaces
+     * @param string| $value = valeur à sanitize
+     * @return string| return value sanityze
+     */
+    public function sanitizeData($value)
+    {
+       // Vérifie si le champs ne contient que des espaces
+      if (ctype_space($value)) {
+        $value= '';
+      }
+      //  Supprimer les espaces de début et de fin
+      $value = trim($value);
+
+      return $value;
+    }
+
 
 
 

@@ -4,6 +4,7 @@ namespace App\Utility;
 use Cake\ORM\TableRegistry;
 
 
+
 class Warnings
 {
 
@@ -23,6 +24,25 @@ class Warnings
       $warningTable->save($warning);
       return true;
 
+    }
+
+    /**
+     * warningDisplay method
+     * Affiche un div warning sur en fonction de champs produit
+     * @param object| $warningObject = objet contenant tous les warnings du produit
+     * @param string| $field = nom du champs products
+     * @return string|null code html du warning
+     */
+    public function warningDisplay($warningObject , $field)
+    {
+        foreach($warningObject as $warning) {
+          // On boucle sur tous les warnings pour voir si le field correspond. Si oui on retour le warning
+          if($warning->field === $field){
+            $value =  '<div class="message error alert alert-warning">'.$warning->title.' : '.$warning->value.'</div>';
+            return $value;
+          }
+        }
+        return null;
     }
 
 }

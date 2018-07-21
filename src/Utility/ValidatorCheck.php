@@ -108,7 +108,8 @@ public function validate($data) {
         break;
 
       case 'dangereux': // alphanumeric, empty
-        if (!$fieldCheck->isalphaNum($key, $row, $data['code'])) {  // Check si alphnumerique
+        $data['dangereux'] = $fieldCheck->sanitizeData($data['dangereux']);
+        if (!$fieldCheck->isalphaNum($key, $data['dangereux'], $data['code'])) {  // Check si alphnumerique
           $data['dangereux'] = null; //On met la value à null si la fonction renvoie false
         };
         break;

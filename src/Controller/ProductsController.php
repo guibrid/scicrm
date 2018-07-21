@@ -81,6 +81,7 @@ class ProductsController extends AppController
      */
     public function add()
     {
+
         $product = $this->Products->newEntity();
         if ($this->request->is('post')) {
             $product = $this->Products->patchEntity($product, $this->request->getData());
@@ -105,11 +106,12 @@ class ProductsController extends AppController
      * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
      * @throws \Cake\Network\Exception\NotFoundException When record not found.
      */
-    public function edit($id = null)
+    public function edit($id = null, $code = null)
     {
         $product = $this->Products->get($id, [
             'contain' => ['Shortbrands', 'Shortorigins']
         ]);
+
         if ($this->request->is(['patch', 'post', 'put'])) {
             $product = $this->Products->patchEntity($product, $this->request->getData());
             if ($this->Products->save($product)) {
@@ -119,11 +121,18 @@ class ProductsController extends AppController
             }
             $this->Flash->error(__('The product could not be saved. Please, try again.'));
         }
+
+        // Faire la requete qui liste tous les codes articles de la table warnings
+
+          $warnings= TableRegistry::get('warnings');
+          $warningList = $warnings->find()->where(['product_code' => $code]);
+
+
         $origins = $this->Products->Origins->find('list', ['limit' => 200]);
         $brands = $this->Products->Brands->find('list', ['limit' => 200]);
         $shortbrands = $this->Products->Shortbrands->find('list', ['limit' => 200]);
         $shortorigins = $this->Products->Shortorigins->find('list', ['limit' => 200]);
-        $this->set(compact('product', 'origins', 'brands', 'shortbrands', 'shortorigins'));
+        $this->set(compact('product', 'origins', 'brands', 'shortbrands', 'shortorigins', 'warningList'));
     }
 
     /**
@@ -225,5 +234,34 @@ class ProductsController extends AppController
         //Affiche la liste des errors d'insertion si il y en a
         foreach($product as $error) {  Debug($error->errors());}
       }
+    }
+
+    /**
+     * Liste Warnings method
+     *
+     */
+    public function listeWarnings()
+    {
+      $this->paginate = [
+          'contain' => ['Origins', 'Brands']
+      ];
+
+      // Faire la requete qui liste tous les codes articles de la table warnings
+      $warningsSearch = TableRegistry::get('warnings');
+      $warningsQuery = $warningsSearch->find()->select('product_code');
+
+      // Requete des produits en Warnings
+      $products = $this->Products->find()
+      ->hydrate(false)
+      ->join([
+          'table' => 'warnings',
+          'alias' => 'w',
+          'type' => 'LEFT',
+          'conditions' => 'w.product_code = products.code',
+      ])
+      ->select(['Products.id','Products.code','Products.active','w.title','w.value'])
+      ->where(['w.product_code IN' => $warningsQuery]);
+
+      $this->set(compact('products'));
     }
 }

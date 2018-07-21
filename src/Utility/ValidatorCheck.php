@@ -22,8 +22,12 @@ public function validate($data) {
         break;
 
       case 'remplacement_product': // alphanumeric, empty
-        if (!$fieldCheck->isalphaNum($key, $row, $data['code'])) {  // Check si alphnumerique
-          $data['remplacement_product'] = null; //On met la value à null si la fonction renvoie false
+        if( empty($row) ){ //Si vide le produit est actif
+            $data['active'] = 1;
+        } else { //Sinon est inactif
+            if (!$fieldCheck->isalphaNum($key, $row, $data['code'])) {  // Check si alphnumerique
+              $data['remplacement_product'] = null; //On met la value à null si la fonction renvoie false
+            };
         };
         break;
 
@@ -92,10 +96,14 @@ public function validate($data) {
         };
         break;
 
-      case 'douanier': // entier,  no empty
-        if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->isVide($key, $row, $data['code'])) {
-          // Check si entier ou vide
-          $data['douanier'] = null; //On met la value à null si la fonction renvoie false
+      case 'douanier': //TODO entier 10 chiffre (autre que 0000000000) (sinon mettre à blanc) ou empty
+        if (!empty($row)){
+          if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->checkLength($key, $row, $data['code'], 10)) {
+            // Check si entier ou vide
+            $data['douanier'] = null; //On met la value à null si la fonction renvoie false
+          };
+        } else {
+          $data['douanier'] = null; //On met la value à null si vide
         };
         break;
 
@@ -139,6 +147,7 @@ public function validate($data) {
         break;
 
       case 'entrepot': // entier, no empty
+      //TODO si code = 1 : mettre inactif et verifier qu'il y a quelque chose dans code article de remplacement
         if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->isVide($key, $row, $data['code'])) {
           // Check si entier ou vide
           $data['entrepot'] = null; //On met la value à null si la fonction renvoie false

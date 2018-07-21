@@ -113,6 +113,17 @@ class FieldCheck
       return true;
     }
 
+    public function checkLength($field, $value, $product_code, $length)
+    {
+      if ( strlen($value)!=$length ) {
+        // si le nombre de caractere n'est pas bon
+        $warning = new Warnings;
+        $warning->insert($field.' ne fait pas '.$length.' caractères', $product_code, $field,  $value);
+        return false;
+      }
+      return true;
+    }
+
     //Verification du format alphanumerique
     public function isalphaNum($field, $value, $product_code)
     {

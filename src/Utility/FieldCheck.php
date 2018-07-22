@@ -212,6 +212,7 @@ class FieldCheck
         $subcategorySearch = TableRegistry::get('subcategories');
         $subcategory = $subcategorySearch->find()
                                          ->where(['Subcategories.code =' => $value]);
+
         //Et on ne fait resortir que la subcategory qui match avec le type(1AL,2AL,..) de categorie associé
         $subcategory->matching('Categories',
                                 function ($q) use ($typeList) {
@@ -231,8 +232,15 @@ class FieldCheck
     }
 
     //Recherche de brands
-    public function searchBrands($field, $value, $product_code)
+    public function searchBrands($field, $value, $product_code, $qualification)
     {
+        $sansmarqueList = ['', '.', '..', '...', 'SANS', 'SANS MARQUE', 'SS MARQUE.'];
+        // Si la marque est de type 'SANS MARQUE' et que Qualification = P
+        // On renome la Marque en '1er Prix'
+        if($qualification === 'P') {
+          $value = '1er Prix';
+        }
+
         //Verifier dans la table brands que la valeur existe
         $brandSearch = TableRegistry::get('brands');
         $brand = $brandSearch->find()->where(['title =' => $value])->first();
@@ -376,8 +384,28 @@ class FieldCheck
       return $value;
     }
 
+    /**
+     * checkEntrepot method
+     * Vérifier si la valeur du code entrepot existe dans la liste des entrepots valide
+     * @param string| $field = nom du champs traité
+     * @param int| $value = code entrepot
+     * @param string| $product_code = code article du produit
+     * @return boolean| return true or false
+     */
+    public function checkEntrepot($field, $value, $product_code)
+    {
+      //Pour toute la liste des entrepot valide
+       foreach($this->entrepotType as $entrepot) {
+         //On recherche si la valeur correspond à un des codes valides
+         if($entrepot[0] === $value){
+           return true;
+         }
+       }
+       //Sinon on créée une alerte entrepot inconu et on return false
+       $warning = new Warnings;
+       $warning->insert('Ce code entrepot est inconu', $product_code, $field, $value);
+       return false;
 
-
-
+    }
 
 }

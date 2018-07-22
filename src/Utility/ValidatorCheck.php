@@ -151,12 +151,13 @@ public function validate($data) {
 
         break;
 
-      case 'entrepot': // entier, no empty
-      //TODO si code = 1 : mettre inactif et verifier qu'il y a quelque chose dans code article de remplacement
-        if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->isVide($key, $row, $data['code'])) {
-          // Check si entier ou vide
-          $data['entrepot'] = null; //On met la value à null si la fonction renvoie false
-        };
+      case 'entrepot':
+        // Doit correspondre à la liste des entrepots valides
+        // Sinon alerte entrepot inconu
+        $data['entrepot'] = $fieldCheck->sanitizeData($data['entrepot']);  //Supprimer espace avant et après la chaine
+        if(!$fieldCheck->checkEntrepot($key, $data['entrepot'], $data['code'])) {
+          $data['entrepot'] = null;
+        }
         break;
 
       case 'qualification': // P M ou A , no empty
@@ -210,7 +211,7 @@ public function validate($data) {
       $fieldCheck->checkVins($key, $row, $data['code'], $data['subcategory_id'], $data['qualification'], $listeSubcategoriVin);
 
       // Recherche de l'id dans les tables brands et shortbrands
-      $data['brand_id'] = $fieldCheck->searchBrands($key, $row, $data['code']);
+      $data['brand_id'] = $fieldCheck->searchBrands($key, $row, $data['code'], $data['qualification']);
       break;
   }
 };

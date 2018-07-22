@@ -166,7 +166,7 @@ class ProductsController extends AppController
 
         $reader = ReaderFactory::create(Type::CSV); // for CSV files
         $reader->setFieldDelimiter('|');
-        $reader->open('files/test7.csv');
+        $reader->open('files/test7light.csv');
 
         $productSearch = TableRegistry::get('products');
 

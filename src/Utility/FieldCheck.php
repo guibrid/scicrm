@@ -10,14 +10,15 @@ class FieldCheck
     //Listes des entrepots avec en array la liste des types possible(frais, sec, surgeles, alimnetaire,...)
     //Cette liste sert dans la fonction searchcategorie pour associé l'articles à la bonne catégorie
     private $entrepotType = [
-              //71744 Recherche  id famille where type 1AL ou 1NAL
+              //71744 Recherche id famille where type 1AL ou 1NAL
               ['71744', ['1AL', '1NAL']],
               //, 71746 Recherche  id famille where type 1AL ou 1NAL
               ['71746', ['1AL', '1NAL']],
-              //89063 Recherche  id famille where type 1AL ou
+              //89063 Recherche  id famille where type 1AL ou 1NAL
               ['89063', ['1AL', '1NAL']],
+              //89063 Recherche id famille where type 2AL ou 2NAL
+              ['88884', ['2AL', '2NAL']],
               ['88642',	['3AL']],
-              ['88884', ['2AL']],
               ['3520',  ['1AL']],
               ['3817',	['2AL']],
               ['4174',  ['1AL']],

@@ -96,15 +96,19 @@ public function validate($data) {
         };
         break;
 
-      case 'douanier': //TODO entier 10 chiffre (autre que 0000000000) (sinon mettre à blanc) ou empty
-        if (!empty($row)){
-          if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->checkLength($key, $row, $data['code'], 10)) {
+      case 'douanier':
+        // Entier, 10 chiffres sinon alerte
+        // Si vide ou 0000000000 on met à null sans alerte
+        $data['douanier'] = $fieldCheck->sanitizeData($data['douanier']); //Supprimer espace avant et après la chaine
+        if (!empty($data['douanier']) && $data['douanier']<> '0000000000'){
+          if (!$fieldCheck->isInteger($key, $data['douanier'], $data['code']) || !$fieldCheck->checkLength($key, $data['douanier'], $data['code'], 10)) {
             // Check si entier ou vide
             $data['douanier'] = null; //On met la value à null si la fonction renvoie false
           };
         } else {
           $data['douanier'] = null; //On met la value à null si vide
         };
+
         break;
 
       case 'dangereux': // alphanumeric, empty

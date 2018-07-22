@@ -81,10 +81,10 @@
             echo $this->Form->control('cdref');
             echo $warning->warningDisplay($warningList , 'cdref');
 
-            echo $this->Form->control('category_code');
+            echo $this->Form->control('category_id', ['options' => $categories]);
             echo $warning->warningDisplay($warningList , 'category_code');
 
-            echo $this->Form->control('subcategory_code');
+            echo $this->Form->control('subcategory_id', ['options' => $subcategories]);
             echo $warning->warningDisplay($warningList , 'subcategory_code');
 
             echo $this->Form->control('entrepot');

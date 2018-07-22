@@ -128,11 +128,13 @@ class ProductsController extends AppController
           $warningList = $warnings->find()->where(['product_code' => $code]);
 
 
-        $origins = $this->Products->Origins->find('list', ['limit' => 200]);
-        $brands = $this->Products->Brands->find('list', ['limit' => 200]);
-        $shortbrands = $this->Products->Shortbrands->find('list', ['limit' => 200]);
-        $shortorigins = $this->Products->Shortorigins->find('list', ['limit' => 200]);
-        $this->set(compact('product', 'origins', 'brands', 'shortbrands', 'shortorigins', 'warningList'));
+        $origins = $this->Products->Origins->find('list');
+        $brands = $this->Products->Brands->find('list');
+        $categories = $this->Products->Categories->find('list');
+        $subcategories = $this->Products->Subcategories->find('list');
+        $shortbrands = $this->Products->Shortbrands->find('list');
+        $shortorigins = $this->Products->Shortorigins->find('list');
+        $this->set(compact('product', 'origins', 'brands', 'shortbrands', 'shortorigins', 'warningList', 'categories', 'subcategories'));
     }
 
     /**
@@ -260,7 +262,7 @@ class ProductsController extends AppController
           'conditions' => 'w.product_code = products.code',
       ])
       ->select(['Products.id','Products.code','Products.active','w.title','w.value'])
-      ->where(['w.product_code IN' => $warningsQuery]);
+      ->where(['w.product_code IN' => $warningsQuery,'Products.active' => 1]);
 
       $this->set(compact('products'));
     }

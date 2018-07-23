@@ -7,6 +7,16 @@ use Cake\ORM\TableRegistry;
 
 class FieldCheck
 {
+
+    /**
+     * Liste des code subcategories qui corresponde aux vins
+     */
+    public $subcategoriesVin = [
+        '10300', '10301', '10302', '10303', '10304', '10305', '10310', '10311', '10312',
+        '10313', '10314', '10315', '10316', '10317', '10318', '10319', '10320', '10321',
+        '10322','10323', '10324', '10325', '10326', '10330', '10331', '10332', '10333',
+        '10334', '10335', '10336', '10337', '10340', '10341', '10342', '10343', '10344',
+        '10345', '10346', '10347', '10350', '10398'];
     //Listes des entrepots avec en array la liste des types possible(frais, sec, surgeles, alimnetaire,...)
     //Cette liste sert dans la fonction searchcategorie pour associé l'articles à la bonne catégorie
     private $entrepotType = [
@@ -277,32 +287,33 @@ class FieldCheck
      */
     public function checkVins($field, $value, $product_code, $subcategory_id, $qualification, $subcategoriesVin)
     {
-
+        //Check si si la subcat et la quelitfication sont renseigner pour pouvoir faire la verifiaction
         if (!is_null($subcategory_id) && !is_null($qualification)) {
 
           //Recherche dans subcategories le code correspondant l'id de la subcategorie
           $subcategoriesSearch = TableRegistry::get('Subcategories');
           $subcategory = $subcategoriesSearch->find()->where(['id =' => $subcategory_id])->first();
           // TODO Si les subcat de vin peuvent etre multiple faire un matching avec les categories
+          // Si la Subcat faire partie de la liste des subcat lié au vin
           if (in_array($subcategory->code, $subcategoriesVin)) {
-
             switch ($qualification) {
             case 'P':
                 $value = '1er Prix';
                 break;
             case 'A':
-                $value = 'Vin';
+                $value = 'VIN';
                 break;
             case 'M':
-                $brand = strtolower($value);
-                if ($brand === 'reflets de france') {
-                  $value = 'Reflets de France'; }
+                // Lister toutes les variantes de la marque Reflets de France
+                $shortbrandList = $this->brandVariations('REFLETS DE FRANCE');
+                //Recherche si une des ces varintes correspond à la marque $value
+                if(array_search($value, $shortbrandList['brand_titles'])){
+                  $value = 'REFLETS DE FRANCE'; }
                 else {
                   $value = 'MDD';
                 }
                 break;
             }
-
           }
 
         } else {
@@ -378,6 +389,8 @@ class FieldCheck
       if (ctype_space($value)) {
         $value= '';
       }
+      //  Convertir en UTF8 les caracteres spéciaux
+      $value = utf8_encode ($value);
       //  Supprimer les espaces de début et de fin
       $value = trim($value);
 
@@ -406,6 +419,30 @@ class FieldCheck
        $warning->insert('Ce code entrepot est inconu', $product_code, $field, $value);
        return false;
 
+    }
+
+    /**
+     * brandVariations method
+     * Lister toutes les variations d'une marques à partir d'un nom de brand (recherche dans brands et shortbrands)
+     * @param string| $value = chaine à chercher
+     * @return array| return array de toutes les variantes de la marque ['brand_id']['brand_titles']
+     */
+    public function brandVariations($value)
+    {
+      // Recherche de la value dans la table brands
+      $brandSearch = TableRegistry::get('Brands');
+      $brand = $brandSearch->find()->where(['title =' => $value])->first();
+      $titleList['brand_id'] = $brand->id;
+      $titleList['brand_titles'] = [$brand->title];
+      // Recherche dans des shortbrands associé à la brands
+      $shortbrandSearch = TableRegistry::get('Shortbrands');
+      $shortbrand = $shortbrandSearch->find()->where(['brand_id =' => $brand->id]);
+      $i= 1;
+      foreach ($shortbrand as $key => $row) {
+        $titleList['brand_titles'][$i] = $row->title;
+        $i++;
+      }
+      return $titleList;
     }
 
 }

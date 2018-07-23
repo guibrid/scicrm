@@ -2,7 +2,6 @@
 namespace App\Utility;
 
 use App\Utility\FieldCheck;
-use App\Controller\SubcategoriesController;
 
 
 class ValidatorCheck
@@ -119,9 +118,9 @@ public function validate($data) {
         break;
 
       case 'origin_id': // entier , no empty(alert)
-          $row = utf8_encode ($data['origin_id']); //Convertir en UFT8
+          $data['origin_id']= $fieldCheck->sanitizeData($data['origin_id']); //Clean la variable
           // Recherche de l'id dans les tables origins et shortorigins
-          $data['origin_id'] = $fieldCheck->searchOrigin($key, $row, $data['code']);
+          $data['origin_id'] = $fieldCheck->searchOrigin($key, $data['origin_id'], $data['code']);
         break;
 
       case 'tva': // double, no empty
@@ -139,13 +138,13 @@ public function validate($data) {
       break;
 
       case 'category_id': // entier, no empty(alert)
-        $data['category_id']= utf8_encode ( $data['category_id'] );
+        $data['category_id']= $fieldCheck->sanitizeData($data['category_id']); //Clean la variable
         // Recherche de le code dans les tables categories
         $data['category_id'] = $fieldCheck->searchCategory($key, $row, $data['entrepot'], $data['code']);
         break;
 
       case 'subcategory_id': // entier, no empty(alert)
-        $data['subcategory_id']= utf8_encode ( $data['subcategory_id'] );
+        $data['subcategory_id']= $fieldCheck->sanitizeData($data['subcategory_id']); //Clean la variable
         // Recherche de le code dans les tables subcategories
         $data['subcategory_id'] = $fieldCheck->searchSubcategory($key, $row, $data['entrepot'], $data['code']);
 
@@ -154,7 +153,7 @@ public function validate($data) {
       case 'entrepot':
         // Doit correspondre à la liste des entrepots valides
         // Sinon alerte entrepot inconu
-        $data['entrepot'] = $fieldCheck->sanitizeData($data['entrepot']);  //Supprimer espace avant et après la chaine
+        $data['entrepot'] = $fieldCheck->sanitizeData($data['entrepot']);  //Clean la variable
         if(!$fieldCheck->checkEntrepot($key, $data['entrepot'], $data['code'])) {
           $data['entrepot'] = null;
         }
@@ -202,16 +201,13 @@ public function validate($data) {
         break;
 
       case 'brand_id': // entier, no empty
-      $row= utf8_encode ($data['brand_id']); //Convertir en UFT8
-      //Gestion du cas particuliers des marques de vin
-      $subcategories = new SubcategoriesController; //Call le Array des subcategory lier au vin
-      $listeSubcategoriVin = $subcategories->subcategoriesVin;
+      $data['brand_id']= $fieldCheck->sanitizeData($data['brand_id']); //Clean la variable
       //Renomer la Marques en fonction du cas particulier des subcategories et Qualification lier au Vin
-      //TODO A tester quand la table categories et subcategory seront populate et activate fonction ci-dessous
-      $fieldCheck->checkVins($key, $row, $data['code'], $data['subcategory_id'], $data['qualification'], $listeSubcategoriVin);
+      $listeSubcategoriVin = $fieldCheck->subcategoriesVin; //Call le Array des subcategory lier au vin
+      $data['brand_id'] = $fieldCheck->checkVins($key, $data['brand_id'], $data['code'], $data['subcategory_id'], $data['qualification'], $listeSubcategoriVin);
 
       // Recherche de l'id dans les tables brands et shortbrands
-      $data['brand_id'] = $fieldCheck->searchBrands($key, $row, $data['code'], $data['qualification']);
+      $data['brand_id'] = $fieldCheck->searchBrands($key, $data['brand_id'] , $data['code'], $data['qualification']);
       break;
   }
 };

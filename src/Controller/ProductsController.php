@@ -166,7 +166,7 @@ class ProductsController extends AppController
 
         $reader = ReaderFactory::create(Type::CSV); // for CSV files
         $reader->setFieldDelimiter('|');
-        $reader->open('files/test7light.csv');
+        $reader->open('files/test7.csv');
 
         $productSearch = TableRegistry::get('products');
 
@@ -208,8 +208,10 @@ class ProductsController extends AppController
     }
 
     /**
-     * updateBase method
-     *
+     * renameHeaderArray method
+     * Renomer les key numériques du array des produits avec les entetes de la base de données
+     * @param array| $array = Liste des products
+     * @return array| retourne le tableau des produits avec les key renomées
      */
     private function renameHeaderArray($array)
     {
@@ -222,9 +224,9 @@ class ProductsController extends AppController
 
     /**
      * insertProductList method
-     *
-     * Insert dans la table produit un liste de insertProductList
-     *
+     * Isert les nouveaux produits dans la base de données
+     * @param array| $array = Liste des products
+     * @return true|false retourne true si l'enregistrement c'est bien déroulé
      */
     private function insertProductList($array)
     {

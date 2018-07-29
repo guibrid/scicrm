@@ -4,6 +4,7 @@ namespace App\Controller;
 use App\Controller\AppController;
 use Box\Spout\Reader\ReaderFactory;
 use Box\Spout\Common\Type;
+use Box\Spout\Writer\WriterFactory;
 use Cake\ORM\TableRegistry;
 
 /**
@@ -157,5 +158,35 @@ class SubcategoriesController extends AppController
       debug('Nombre de ligne traitées: '.$i);
       debug('Importation terminée');
       die;
+    }
+
+    /**
+     * Index method
+     *
+     * @return \Cake\Http\Response|void
+     */
+    public function export()
+    {
+
+        $subcategories = $this->Subcategories->find('all');
+        //$writer = WriterFactory::create(Type::XLSX); // for XLSX files
+        $writer = WriterFactory::create(Type::CSV); // for CSV files
+
+        $writer->openToFile('files/toto.csv'); // write data to a file or to a PHP stream
+
+         // style will only be applied to this row
+        $test = ['csv--11|csv--12'];
+        foreach($subcategories as $row) {
+          //$writer->addRow($singleRow);
+
+          $title = explode('/', $row->title);
+          $title= end($title);
+          $title = str_replace(' ', '_', $title);
+          $ligne = [$row->id.'|'.$row->code.'|'.$title.'|'.$row->category_id];
+
+          $writer->addRow($ligne);
+
+        }
+        die;
     }
 }

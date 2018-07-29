@@ -77,8 +77,13 @@ class ProductsTable extends Table
     // Dans une classe table ou behavior
     public function beforeMarshal(Event $event, ArrayObject $data, ArrayObject $options)
     {
+      //if(isset($data['id'])) {
+
+      //} else {
+
       $validatorCheck = new ValidatorCheck;
       $validatorCheck->validate($data); // Validation personnalisé des données
+      //}
     }
 
     /**

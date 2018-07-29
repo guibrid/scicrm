@@ -7,9 +7,9 @@ use Cake\ORM\TableRegistry;
 
 class FieldCheck
 {
-
     /**
      * Liste des code subcategories qui corresponde aux vins
+     * Utiliser lors de la verification de la marque
      */
     public $subcategoriesVin = [
         '10300', '10301', '10302', '10303', '10304', '10305', '10310', '10311', '10312',
@@ -17,8 +17,11 @@ class FieldCheck
         '10322','10323', '10324', '10325', '10326', '10330', '10331', '10332', '10333',
         '10334', '10335', '10336', '10337', '10340', '10341', '10342', '10343', '10344',
         '10345', '10346', '10347', '10350', '10398'];
-    //Listes des entrepots avec en array la liste des types possible(frais, sec, surgeles, alimnetaire,...)
-    //Cette liste sert dans la fonction searchcategorie pour associé l'articles à la bonne catégorie
+
+    /**
+    * Listes des entrepots avec en array la liste des types possible(frais, sec, surgeles, alimnetaire,...)
+    * Cette liste sert dans la fonction searchcategorie pour associé l'articles à la bonne catégorie
+    */
     private $entrepotType = [
               //71744 Recherche id famille where type 1AL ou 1NAL
               ['71744', ['1AL', '1NAL']],
@@ -249,6 +252,8 @@ class FieldCheck
         // On renome la Marque en '1er Prix'
         if($qualification === 'P') {
           $value = '1er Prix';
+        } else if ($qualification === 'M') {
+          $value = 'MDD';
         }
 
         //Verifier dans la table brands que la valeur existe

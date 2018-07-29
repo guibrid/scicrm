@@ -11,7 +11,9 @@ public function validate($data) {
 
   $fieldCheck = new FieldCheck;
 
+//die;
   foreach($data as $key => $row) {
+
     switch ($key) {
 
       case 'code': // alphanumeric, no empty
@@ -71,6 +73,7 @@ public function validate($data) {
         break;
 
       case 'dlv': // date ou vide
+        // TODO si inferieur de 4 mois, update la DVL à 4 mois de la date jour
         if (!$fieldCheck->isValidDate($key, $data['dlv'], $data['code']) ) { //Check si le format et le date sont valides
           $data['dlv'] = null; //On met la value à null si la fonction renvoi false
         } else if(!empty($data['dlv'])) {
@@ -205,14 +208,11 @@ public function validate($data) {
       //Renomer la Marques en fonction du cas particulier des subcategories et Qualification lier au Vin
       $listeSubcategoriVin = $fieldCheck->subcategoriesVin; //Call le Array des subcategory lier au vin
       $data['brand_id'] = $fieldCheck->checkVins($key, $data['brand_id'], $data['code'], $data['subcategory_id'], $data['qualification'], $listeSubcategoriVin);
-
       // Recherche de l'id dans les tables brands et shortbrands
       $data['brand_id'] = $fieldCheck->searchBrands($key, $data['brand_id'] , $data['code'], $data['qualification']);
       break;
   }
 };
-
-
   return $data;
 
 }

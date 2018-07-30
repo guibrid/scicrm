@@ -5,6 +5,7 @@ use App\Controller\AppController;
 use Box\Spout\Reader\ReaderFactory;
 use Box\Spout\Common\Type;
 use Cake\ORM\TableRegistry;
+use App\Utility\FieldCheck;
 
 /**
  * Products Controller
@@ -165,17 +166,23 @@ class ProductsController extends AppController
     public function updateBase()
     {
         $time_start = microtime(true);
-
+        $csvFilePath = "files/test7.csv";
+        $csvNbrRows = count(file($csvFilePath));
         $reader = ReaderFactory::create(Type::CSV); // for CSV files
         $reader->setFieldDelimiter('|');
-        $reader->open('files/test7light.csv');
+        $reader->open($csvFilePath);
 
         $productSearch = TableRegistry::get('products');
+
         $chunk = 1000; // for example
+        //debug($csvNbrRows);
+        //debug($chunk);
+        $loop = ceil($csvNbrRows / $chunk);
+        //debug($loop);
+        $fieldCheck = new FieldCheck;
 
-        foreach ($reader->getSheetIterator() as $sheet) {
-
-          //Compteur le nombre de ligne du csv
+        // AJOUT AVEC CHUNKS
+        /*foreach ($reader->getSheetIterator() as $sheet) {
 
           // Faire boucle de 1000 ligne
           $updateProductList = [];
@@ -183,8 +190,28 @@ class ProductsController extends AppController
 
           foreach ($sheet->getRowIterator() as $key => $productRow) {
 
-                // On renome les keys du array avec les entetes de la table products
-                $productRow = $this->renameHeaderArray($productRow);
+            if( $key === $chunk){
+              Debug($chunk);
+
+              // Si l'array des nouveaux articles n'est pas vide, on insert les produits
+              if(!empty($insertProductList)){
+                $this->insertProductList($insertProductList);
+              }
+
+              // Si l'array des articles à mettre à jour n'est pas vide, on update
+              if(!empty($updateProductList)){
+                $this->updateProductList($updateProductList);
+              }
+              $chunk = $chunk + 1000;
+              $updateProductList = [];
+              $insertProductList = [];
+            } else {
+              // on ajoute les rows a l'array d'insert ou d'update
+              // On renome les keys du array avec les entetes de la table products
+              $productRow = $this->renameHeaderArray($productRow);
+
+              // Si le produit est actif on l'ajoute ou on l'update dans la base
+              if($fieldCheck->checkActiveProduct($productRow['remplacement_product'])){
 
                 //On recherche si le code article existe dans la table products
                 $product = $productSearch->find('all')
@@ -200,38 +227,67 @@ class ProductsController extends AppController
                   //Si il n'existe pas on l'ajoute dans la liste des products à insert
                   $insertProductList[$key] = $productRow;
                 }
+
+              }
+
+            }
+
+          }
+
+        }*/// FIN avec CHUNKS
+
+        // AJOUT SANS CHUNKS
+        foreach ($reader->getSheetIterator() as $sheet) {
+
+          foreach ($sheet->getRowIterator() as $key => $productRow) {
+
+            // On renome les keys du array avec les entetes de la table products
+            $productRow = $this->renameHeaderArray($productRow);
+
+            // Si le produit est actif on l'ajoute ou on l'update dans la base
+            if($fieldCheck->checkActiveProduct($productRow['remplacement_product'])){
+
+              //On recherche si le code article existe dans la table products
+              $product = $productSearch->find('all')
+                                       ->select(['id'])
+                                       ->where(['code' => $productRow['code']]);
+
+              if ( $product->count() === 1 ) { // Nbr de resultat de le réquete
+                //Si il existe on l'ajoute dans la liste des products à update
+                $product_id = $product->first()->toArray(); // On récupere l'id du produit
+                $productRow = array_merge($product_id, $productRow); // On ajoute l'id à l'array du product
+                $updateProductList[$key] = $productRow;
+              } else {
+                //Si il n'existe pas on l'ajoute dans la liste des products à insert
+                $insertProductList[$key] = $productRow;
+              }
+            }
+
           }
 
           // Si l'array des nouveaux articles n'est pas vide, on insert les produits
           if(!empty($insertProductList)){
-            //debug('Produits à insert');
-            //debug($insertProductList);
             $this->insertProductList($insertProductList);
           }
 
           // Si l'array des articles à mettre à jour n'est pas vide, on update
           if(!empty($updateProductList)){
-            //debug('Produits à update');
-            //debug($updateProductList);
             $this->updateProductList($updateProductList);
           }
 
           // Fin de la boucle des 1000 lignes
 
-        }
+        }// FIN SANS CHUNKS
 
 
 
         $reader->close();
 
         $time_end = microtime(true);
-
         //dividing with 60 will give the execution time in minutes otherwise seconds
         $execution_time = ($time_end - $time_start)/60;
-
         //execution time of the script
         echo '<p>Total Execution Time: '.$execution_time.' Mins</p>';
-
         echo "<p>Peak memory:", (memory_get_peak_usage(true) / 1024 / 1024), " MB</p>";
 
     }
@@ -297,7 +353,7 @@ class ProductsController extends AppController
       if (isset($listErrors)) { // On affiche les erreurs si il y en a
         echo $listErrors;
       } else {
-        $this->Flash->success(__('Les mises à jour de produits ont été effectué avec succès.'));
+        $this->Flash->success(__('Les mises à jour des produits ont été effectué avec succès.'));
       }
 
     }

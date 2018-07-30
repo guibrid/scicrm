@@ -450,4 +450,32 @@ class FieldCheck
       return $titleList;
     }
 
+    /**
+     * checkDouanier method
+     * Vérifier si le code douanier est un entier de 10 chiffre autre que 000000000
+     * @param string| $codeDouannier = code douanier
+     * @return string| return le code douanier
+     */
+    public function checkDouanier($codeDouannier)
+    {
+      if(!ctype_digit((string)$codeDouannier) || strlen($codeDouannier) !== 10 || $codeDouannier === '0000000000') {
+        $codeDouannier = "";
+      }
+      return $codeDouannier;
+    }
+
+    /**
+     * checkActiveProduct method
+     * Vérifier si l'article est actif ou non
+     * @param string| $codeRemplacement = code de remplacement
+     * @return boolean| return true pour actif et false pour inactif
+     */
+    public function checkActiveProduct($codeRemplacement)
+    {
+      $codeRemplacement = $this->sanitizeData($codeRemplacement);
+      if(empty($codeRemplacement)) {
+        return true;
+      }
+    }
+
 }

@@ -4,6 +4,9 @@ namespace App\Controller;
 use App\Controller\AppController;
 use Box\Spout\Reader\ReaderFactory;
 use Box\Spout\Common\Type;
+use Box\Spout\Writer\WriterFactory;
+use Box\Spout\Writer\Style\StyleBuilder;
+use Box\Spout\Writer\Style\Color;
 use Cake\ORM\TableRegistry;
 use App\Utility\FieldCheck;
 
@@ -44,6 +47,14 @@ class ProductsController extends AppController
             'ifls_remplacement',
             'assortiment',
             'brand_id'];
+
+
+    private $catalogueHeaders = [
+      ['Code',	  'Cde',	'New',	'Durée de',	'DLV',	'Désignation des marchandises',	'Marque',	'Piéces',	'PCB',	'Tarif',	'UV',	'Unités',	'Poids',	'Volume',	'Montant',	'Poids',	'Volume',	'Colis par',	'Colis par', 'Code', 'Q', 'GENCOD'],
+      ['Article',	'Colis','', 'vie jours',	'Indicative','', '', 'Article', 'Colis','', '', '', 'Cde', 'Cde', 'Cde', 'Colis',	'Colis', 'couche',	'Palette',	'Douanier', '', ''],
+      ['', '', '', 'Indicative',	'au 1er du mois', '', '',	'Kilo']
+    ];
+
     /**
      * Index method
      *
@@ -244,9 +255,6 @@ class ProductsController extends AppController
             // On renome les keys du array avec les entetes de la table products
             $productRow = $this->renameHeaderArray($productRow);
 
-            // Si le produit est actif on l'ajoute ou on l'update dans la base
-            if($fieldCheck->checkActiveProduct($productRow['remplacement_product'])){
-
               //On recherche si le code article existe dans la table products
               $product = $productSearch->find('all')
                                        ->select(['id'])
@@ -261,7 +269,6 @@ class ProductsController extends AppController
                 //Si il n'existe pas on l'ajoute dans la liste des products à insert
                 $insertProductList[$key] = $productRow;
               }
-            }
 
           }
 
@@ -282,6 +289,9 @@ class ProductsController extends AppController
 
 
         $reader->close();
+
+        //TODO DELETE tous les warnings des products inactifs
+        //DELETE w FROM `warnings` w INNER JOIN products e ON w.product_code = e.code WHERE active = 0
 
         $time_end = microtime(true);
         //dividing with 60 will give the execution time in minutes otherwise seconds
@@ -385,5 +395,136 @@ class ProductsController extends AppController
       ->where(['w.product_code IN' => $warningsQuery,'Products.active' => 1]);
 
       $this->set(compact('products'));
+    }
+
+    /**
+     * Export method
+     *
+     * @return \Cake\Http\Response|void
+     */
+    public function export($type = null)
+    {
+
+
+        $emptyXls = 'files/empty.xlsx';
+        $exportFile = 'files/'.time().'.xlsx';
+        if (!copy($emptyXls, $exportFile)) {
+          echo "failed to copy";
+        }
+
+        switch ($type) {
+          case 'catalogue':
+            // code...
+            $finalFile = 'files/catalogue-'.time().'.xlsx';
+            rename($exportFile, $finalFile);
+            $this->generateCatalogue($finalFile);
+            debug('Generate catalogue');
+            break;
+
+          default:
+            // code...
+            debug('Action inconnue');
+            break;
+        }
+        die;
+
+
+    }
+
+    /**
+     * Export method
+     *
+     * @return \Cake\Http\Response|void
+     */
+    public function generateCatalogue($file)
+    {
+
+      $styleCategorie = (new StyleBuilder())
+        ->setFontBold()
+        ->setFontSize(22)
+        ->setFontColor(Color::ORANGE)
+        ->setShouldWrapText(false)
+        ->build();
+
+      $stylesubCategorie = (new StyleBuilder())
+        ->setFontBold()
+        ->setFontSize(16)
+        ->setFontColor(Color::BLACK)
+        ->setShouldWrapText(false)
+        ->build();
+
+      $writer = WriterFactory::create(Type::XLSX); // for XLSX files
+      $writer->openToFile($file);
+
+      foreach ($this->catalogueHeaders as $value) {
+        $writer->addRow($value);
+      }
+
+      $subcategoriesList = TableRegistry::get('subcategories');
+      $categoriesList = TableRegistry::get('categories');
+
+      // Ajout des catégories
+      $categories = $categoriesList->find('all');
+      foreach($categories as $category) {
+            //debug($categories);
+            $writer->addRow(['']);
+            $writer->addRow(['']);
+            $writer->addRowWithStyle([$category->title], $styleCategorie);
+
+            // Ajout des sous catégories
+
+            $subcategories = $subcategoriesList->find('all')
+                                               ->where(['category_id =' => $category->id]);
+            foreach($subcategories as $subcategory) {
+                  $writer->addRowWithStyle([$subcategory->title], $stylesubCategorie);
+                  // Ajout des articles
+                  $products = $this->Products->find('all')
+                                             ->where(['Products.active =' => 1, 'Products.subcategory_id =' => $subcategory->id])
+                                             ->contain(['origins','categories','subcategories','brands']);
+                  foreach($products as $row) {
+                    // Formatage de la date dlv
+                    if(!empty($row->dlv)){  $row->dlv = date_format($row->dlv, 'd-m-Y'); }
+
+                    // Information exporter pour chaque produit
+                    $ligne = [
+                      $row->code ,
+                      '',
+                      '',
+                      $row->duree_vie,
+                      $row->dlv,
+                      $row->title,
+                      $row->Brands['title'],
+                      $row->pieceartk,
+                      $row->pcb,
+                      $row->prix,
+                      $row->uv,
+                      '',
+                      '',
+                      '',
+                      '',
+                      $row->poids,
+                      $row->volume,
+                      '',
+                      '',
+                      (string)$row->douanier,
+                      $row->qualification,
+                      $row->gencod];
+
+
+                      /*
+                       $row->remplacement_product, $row->title, $row->pcb , $row->prix,
+                    $row->uv, $row->poids, $row->volume, $row->dlv, $row->duree_vie, $row->gencod, (string)$row->douanier,
+                    $row->dangereux, $row->Origins['title'], $row->tva, $row->cdref, $row->Categories['code'],
+                    $row->Categories['title'], $row->Subcategories['code'], $row->Subcategories['title'],
+                    $row->entrepot, $row->supplier, $row->qualification, $row->couche_palette, $row->colis_palette,
+                    $row->pieceartk, $row->ifls_remplacement, $row->assortiment, $row->Brands['title']];*/
+                    // Ajout de la ligne au fichier Excel
+                    $writer->addRow($ligne);
+
+                  }
+                  $writer->addRow(['']);
+            }
+      }
+      $writer->close();
     }
 }

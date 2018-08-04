@@ -153,15 +153,17 @@ public function validate($data) {
         $data['douanier'] = $fieldCheck->checkDouanier($data['douanier']); //Vérifier le format du code douanier
         break;
 
-      case 'dangereux': // alphanumeric, empty
+      case 'dangereux': // entier, double ou empty
+        $data['dangereux'] = str_replace(",", ".", $data['dangereux']); // On remplace la virgule par un point
         $data['dangereux'] = $fieldCheck->sanitizeData($data['dangereux']);
-        if (!$fieldCheck->isalphaNum($key, $data['dangereux'], $data['code'])) {  // Check si alphnumerique
+        if (!$fieldCheck->isNumeric($key, $data['dangereux'], $data['code'])) {  // Check si numerique (entier ou double)
           // INSERT / UPDATE
           if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
             $data['dangereux'] = null;
           } else { // Si c'est un update on garde le champs enregistré dans la base, et la valeur en erreur sera dans le warning
             $data['dangereux'] = $productSaved['dangereux'];
           }
+
         };
         break;
 
@@ -171,9 +173,10 @@ public function validate($data) {
           $data['origin_id'] = $fieldCheck->searchOrigin($key, $data['origin_id'], $data['code']);
         break;
 
-      case 'tva': // double, no empty
+      case 'tva': // numerique ou vide
         $data['tva'] = str_replace(",", ".", $data['tva']); // On remplace la virgule par un point
-        if (!$fieldCheck->isDouble($key, $data['tva'] , $data['code']) || !$fieldCheck->isVide($key, $data['tva'], $data['code'])) {  // Check si c'est un double ou vide
+        if (!$fieldCheck->isNumeric($key, $data['tva'] , $data['code']))
+             {  // Check si c'est un double ou vide
           // INSERT / UPDATE
           if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
             $data['tva'] = null;
@@ -183,8 +186,8 @@ public function validate($data) {
         };
         break;
 
-      case 'cdref': // entier,  no empty
-      if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->isVide($key, $row, $data['code'])) {
+      case 'cdref': // entier, ou vide
+      if (!$fieldCheck->isInteger($key, $row, $data['code']) ) {
         // INSERT / UPDATE
         if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
           $data['cdref'] = null;
@@ -195,15 +198,17 @@ public function validate($data) {
       break;
 
       case 'category_id': // entier, no empty(alert)
-        $data['category_id']= $fieldCheck->sanitizeData($data['category_id']); //Clean la variable
+        $data['category_id'] = $fieldCheck->sanitizeData($data['category_id']); //Clean la variable
+        $data['category_id'] = $fieldCheck->checkOldCategories($data['category_id']); // Vérifier si le code catégorie est un ancien code
         // Recherche de le code dans les tables categories
-        $data['category_id'] = $fieldCheck->searchCategory($key, $row, $data['entrepot'], $data['code']);
+        $data['category_id'] = $fieldCheck->searchCategory($key, $data['category_id'], $data['entrepot'], $data['code']);
         break;
 
       case 'subcategory_id': // entier, no empty(alert)
         $data['subcategory_id']= $fieldCheck->sanitizeData($data['subcategory_id']); //Clean la variable
+        $data['subcategory_id']= $fieldCheck->checkOldSubCategories($data['subcategory_id']); // Vérifier si le code subcatégorie est un ancien code
         // Recherche de le code dans les tables subcategories
-        $data['subcategory_id'] = $fieldCheck->searchSubcategory($key, $row, $data['entrepot'], $data['code']);
+        $data['subcategory_id'] = $fieldCheck->searchSubcategory($key, $data['subcategory_id'], $data['entrepot'], $data['code']);
 
         break;
 
@@ -257,7 +262,7 @@ public function validate($data) {
 
       case 'pieceartk': // entier ou vide
         //Verifier si pieceartk correspond avec la colonne UV
-        $data['pieceartk'] = $fieldCheck->checkPieceartk($key, $row, $data['code'], $data['uv']);
+        $data['pieceartk'] = $fieldCheck->checkPieceartk($key, $row, $data['code'], $data['uv'],  $data['entrepot']);
         break;
 
       case 'ifls_remplacement': // alphanumeric, empty

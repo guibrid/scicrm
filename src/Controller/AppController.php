@@ -46,9 +46,10 @@ class AppController extends Controller
         ]);
         $this->loadComponent('Flash');
 
-        
-        ini_set('memory_limit','-1');
-        ini_set('max_execution_time', 0);
+
+        ini_set('memory_limit','-1');  // Supprimer la limite de mémoire
+        ini_set('max_execution_time', 0); // Supprimer la limite de temps d'execution
+        mb_internal_encoding('UTF-8'); // Coder l'ensemble des données de l'appli en UTF-8
 
         /*
          * Enable the following component for recommended CakePHP security settings.

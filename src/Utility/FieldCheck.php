@@ -8,6 +8,23 @@ use Cake\ORM\TableRegistry;
 class FieldCheck
 {
     /**
+     * Liste des ancien code Categories avec leur nouvelle correspondance
+     * Utiliser lors de la verification de la catégorie
+     */
+    public $oldCategories = [['084','2586'], ['082','2585'], ['081','2584'],
+                             ['086','2324'], ['087','2324'], ['080','2324']];
+
+    /**
+     * Liste des ancien code subCategories avec leur nouvelle correspondance
+     * Utiliser lors de la verification de la subcatégorie
+     */
+    public $oldSubCategories = [['08406','25860'], ['082802','25853'], ['08104','25841'],
+                             ['08602','23241'], ['082805','25853'], ['082804','25853'],
+                             ['082801','25853'], ['082803','25853'], ['082807','25853'],
+                             ['08101','25841'], ['08601','23241'], ['08701','23241'],
+                             ['08005','23241'], ['082808','25853'], ['082809','25853']];
+
+    /**
      * Liste des code subcategories qui corresponde aux vins
      * Utiliser lors de la verification de la marque
      */
@@ -17,6 +34,12 @@ class FieldCheck
         '10322','10323', '10324', '10325', '10326', '10330', '10331', '10332', '10333',
         '10334', '10335', '10336', '10337', '10340', '10341', '10342', '10343', '10344',
         '10345', '10346', '10347', '10350', '10398'];
+
+    /**
+    * Listes des entrepots Carrefour
+    * Cette liste sert dans la fonction checkPieceartk
+    */
+    private $entrepotCarrefour = ['71744', '71746', '89063', '88884', '88642'];
 
     /**
     * Listes des entrepots avec en array la liste des types possible(frais, sec, surgeles, alimnetaire,...)
@@ -150,10 +173,25 @@ class FieldCheck
       return true;
     }
 
+    //Verification du format numerique (entier ou double)
+    public function isNumeric($field, $value, $product_code)
+    {
+
+      if (!is_numeric($value) && !empty($value)) {
+        //Si le code n'est pas numérique (entier ou double) ou vide on ajoute un warning
+        $warning = new Warnings;
+        $warning->insert($field.' n\'est pas un chiffre entier ou décimal', $product_code, $field, $value);
+        return false;
+      }
+      return true;
+    }
+
     //Recherche de l'origine
     public function searchOrigin($field, $value, $product_code)
     {
-
+        if(is_null($value) || empty($value)) {
+          return null;
+        }
         //Verifier dans la table origins que la valeur existe
         $originSearch = TableRegistry::get('origins');
         $origin = $originSearch->find()->where(['title =' => $value])->first();
@@ -330,21 +368,24 @@ class FieldCheck
     }
 
     //Vérification Marques pour les vins
-    public function checkPieceartk($field, $value, $product_code, $uv)
+    public function checkPieceartk($field, $value, $product_code, $uv, $entrepot)
     {
         /**
         *
-        * Si la colonne uv est égale à K, pieceartk ne peut pas être vide (si uv U vide)
+        * Si la colonne uv est égale à K et que le code code entrepot est autre que Carrefour pieceartk ne peut pas être vide (si uv U vide)
         * Si la colonne uv est égale à U, pieceartk doit être vide
         *
         **/
+
         if ( !empty($uv) || is_null($uv) )
         {
           if ( $uv === 'K' && empty($value) ) {
-            //On créée une alerte
-            $warning = new Warnings;
-            $warning->insert('uv est à K, pieceartk ne peut pas être vide', $product_code, $field, $value);
-            $value = null;
+            if (in_array($entrepot, $this->entrepotCarrefour)){ // On verrifie si l'entrepot est Carrefour
+              //On créée une alerte
+              $warning = new Warnings;
+              $warning->insert('uv est à K, pieceartk ne peut pas être vide', $product_code, $field, $value);
+              $value = null;
+            }
           } else if( $uv === 'U' && !empty($value) ) {
             //On créée une alerte
             $warning = new Warnings;
@@ -458,6 +499,7 @@ class FieldCheck
      */
     public function checkDouanier($codeDouannier)
     {
+
       if(!ctype_digit((string)$codeDouannier) || strlen($codeDouannier) !== 10 || $codeDouannier === '0000000000') {
         $codeDouannier = "";
       }
@@ -476,6 +518,38 @@ class FieldCheck
       if(empty($codeRemplacement)) {
         return true;
       }
+    }
+
+    /**
+     * checkOldCategories method
+     * Vérifier si la code category est un ancien code
+     * @param string| $category_code = code category
+     * @return int| return le code catégorie mise à jour ou non
+     */
+    public function checkOldCategories($category_code)
+    {
+      foreach ($this->oldCategories as $key => $value) {
+        if($category_code == $value[0]) {
+          $category_code = $value[1];
+        }
+      }
+        return $category_code;
+    }
+
+    /**
+     * checkOldSubCategories method
+     * Vérifier si la code category est un ancien code
+     * @param string| $category_code = code category
+     * @return int| return le code catégorie mise à jour ou non
+     */
+    public function checkOldSubCategories($subcategory_code)
+    {
+      foreach ($this->oldSubCategories as $key => $value) {
+        if($subcategory_code == $value[0]) {
+          $subcategory_code = $value[1];
+        }
+      }
+        return $subcategory_code;
     }
 
 }

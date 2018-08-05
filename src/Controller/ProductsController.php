@@ -177,7 +177,7 @@ class ProductsController extends AppController
     public function updateBase()
     {
         $time_start = microtime(true);
-        $csvFilePath = "files/test7.csv";
+        $csvFilePath = "files/test7light.csv";
         $csvNbrRows = count(file($csvFilePath));
         $reader = ReaderFactory::create(Type::CSV); // for CSV files
         $reader->setFieldDelimiter('|');

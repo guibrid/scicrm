@@ -106,6 +106,35 @@ class FieldCheck
         return true;
     }
 
+
+
+    /**
+     * checkDlv method
+     * Vérifier si la dlv à plus de 4 mois par rapport à la date du jour
+     * @param string | $dlv = dlv au format dd/mm/year
+     * @return string | $dlv
+     */
+    public function checkDlv($dlv)
+    {
+      //On formate la date de la DLV
+      $dlv = date_create_from_format('d/m/Y', $dlv);
+
+      // Definir la date de DLV minimun de 4 moins
+      $minDlv = date_create( date('Y-m-d', strtotime(date('Y-m-d'). ' + 4 months')));
+
+      // Si la date de DLV est inférieur à 4 mois, on lui ajoute la différence du nbr de jour
+      if($dlv < $minDlv){
+        //debug('La dlv a moins de 4 mois');
+        $interval = date_diff($dlv, $minDlv); // Comparaison des 2 dates
+        // Ajout nbr de jours manquant à la dlv et on formate la date pour la BDD
+        $dlv = date_format(date_add($dlv, date_interval_create_from_date_string($interval->days.' days')), 'Y-m-d');
+      } else {
+        // On retourne la date formater pour BDD
+        $dlv = date_format($dlv, 'Y-m-d');
+      }
+        return $dlv;
+    }
+
     public function matchString($field, $value, $product_code, $options)
     {
       if (!in_array($value, $options) && !empty($value)) { // On recherche dans le array des options si la valeur existe
@@ -499,7 +528,7 @@ class FieldCheck
      */
     public function checkDouanier($codeDouannier)
     {
-
+      // TODO Si le code commence par plus de 1 zéro mettre à blanc
       if(!ctype_digit((string)$codeDouannier) || strlen($codeDouannier) !== 10 || $codeDouannier === '0000000000') {
         $codeDouannier = "";
       }

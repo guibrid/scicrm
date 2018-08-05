@@ -63,6 +63,7 @@ public function validate($data) {
 
       case 'prix': // double ou vide
         $data['prix'] = str_replace(",", ".", $data['prix']); // On remplace la virgule par un point
+        //TODO Si code entrepot carrefour prix obligatoire
         if (!$fieldCheck->isDouble($key, $data['prix'] , $data['code'])) {  // Check si c'est un double
           // INSERT / UPDATE
           if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
@@ -110,7 +111,6 @@ public function validate($data) {
         break;
 
       case 'dlv': // date ou vide
-        // TODO si inferieur de 4 mois, update la DVL à 4 mois de la date jour
         if (!$fieldCheck->isValidDate($key, $data['dlv'], $data['code']) ) { //Check si le format et le date sont valides
           // INSERT / UPDATE
           if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
@@ -118,10 +118,9 @@ public function validate($data) {
           } else { // Si c'est un update on garde le champs enregistré dans la base, et la valeur en erreur sera dans le warning
             $data['dlv'] = $productSaved['dlv'];
           }
-        } else if(!empty($data['dlv'])) {
-          // On met la date au format YYY/mm/dd pour insert dans la base
-          $data['dlv'] = date_create_from_format('d/m/Y', $data['dlv']);
-          $data['dlv'] = date_format($data['dlv'], 'Y-m-d');
+        } else if(!empty($data['dlv'])) { // Si la date n'est pas vide
+          // On verifie la durée de la DLV (> à 4 mois) et on met au format YYY/mm/dd pour insert dans la base
+          $data['dlv'] = $fieldCheck->checkDlv($data['dlv']);
         }
         break;
 

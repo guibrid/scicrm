@@ -317,12 +317,13 @@ class FieldCheck
     public function searchBrands($field, $value, $product_code, $qualification)
     {
         $sansmarqueList = ['', '.', '..', '...', 'SANS', 'SANS MARQUE', 'SS MARQUE.'];
-        // Si la marque est de type 'SANS MARQUE' et que Qualification = P
-        // On renome la Marque en '1er Prix'
-        if($qualification === 'P') {
-          $value = '1er Prix';
-        } else if ($qualification === 'M') {
-          $value = 'MDD';
+        // Si la marque est de type 'SANS MARQUE' et que Qualification = P ou M
+        if(array_search($value, $sansmarqueList)){
+          if($qualification === 'P') { // On renome la Marque en '1er Prix'
+            $value = '1er Prix';
+          } else if ($qualification === 'M') { // On renome la Marque en '1er Prix'
+            $value = 'MDD';
+          }
         }
 
         //Verifier dans la table brands que la valeur existe

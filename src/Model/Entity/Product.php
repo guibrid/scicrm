@@ -34,6 +34,7 @@ use Cake\ORM\Entity;
  * @property string $ifls_remplacement
  * @property string $assortiment
  * @property string $brand_id
+ * @property bool $new
  * @property bool $active
  * @property \Cake\I18n\FrozenTime $created
  * @property \Cake\I18n\FrozenTime $modified
@@ -85,6 +86,7 @@ class Product extends Entity
         'ifls_remplacement' => true,
         'assortiment' => true,
         'brand_id' => true,
+        'new' => true,
         'active' => true,
         'created' => true,
         'modified' => true,

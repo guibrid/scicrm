@@ -3,6 +3,8 @@ namespace App\Utility;
 
 use App\Utility\Warnings;
 use Cake\ORM\TableRegistry;
+use Cake\Filesystem\Folder;
+use Cake\Filesystem\File;
 
 
 class FieldCheck
@@ -523,13 +525,13 @@ class FieldCheck
     /**
      * checkDouanier method
      * Vérifier si le code douanier est un entier de 10 chiffre autre que 000000000
+     * et si le deuxieme caractere n'est pas un 0 car ces codes ne peuvent pas commencer par un double 0
      * @param string| $codeDouannier = code douanier
      * @return string| return le code douanier
      */
     public function checkDouanier($codeDouannier)
     {
-      // TODO Si le code commence par plus de 1 zéro mettre à blanc
-      if(!ctype_digit((string)$codeDouannier) || strlen($codeDouannier) !== 10 || $codeDouannier === '0000000000') {
+      if(!ctype_digit((string)$codeDouannier) || strlen($codeDouannier) !== 10 || $codeDouannier === '0000000000' || substr($codeDouannier, 1, 1) == 0) {
         $codeDouannier = "";
       }
       return $codeDouannier;

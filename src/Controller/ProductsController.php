@@ -9,6 +9,7 @@ use Box\Spout\Writer\Style\StyleBuilder;
 use Box\Spout\Writer\Style\Color;
 use Cake\ORM\TableRegistry;
 use App\Utility\FieldCheck;
+use App\Utility\CatalogueHelpers;
 
 /**
  * Products Controller
@@ -47,13 +48,6 @@ class ProductsController extends AppController
             'ifls_remplacement',
             'assortiment',
             'brand_id'];
-
-
-    private $catalogueHeaders = [
-      ['Code',	  'Cde',	'New',	'Durée de',	'DLV',	'Désignation des marchandises',	'Marque',	'Piéces',	'PCB',	'Tarif',	'UV',	'Unités',	'Poids',	'Volume',	'Montant',	'Poids',	'Volume',	'Colis par',	'Colis par', 'Code', 'Q', 'GENCOD'],
-      ['Article',	'Colis','', 'vie jours',	'Indicative','', '', 'Article', 'Colis','', '', '', 'Cde', 'Cde', 'Cde', 'Colis',	'Colis', 'couche',	'Palette',	'Douanier', '', ''],
-      ['', '', '', 'Indicative',	'au 1er du mois', '', '',	'Kilo']
-    ];
 
     /**
      * Index method
@@ -177,13 +171,16 @@ class ProductsController extends AppController
     public function updateBase()
     {
         $time_start = microtime(true);
-        $csvFilePath = "files/test7light.csv";
+        $csvFilePath = "files/test7.csv";
         $csvNbrRows = count(file($csvFilePath));
         $reader = ReaderFactory::create(Type::CSV); // for CSV files
         $reader->setFieldDelimiter('|');
         $reader->open($csvFilePath);
 
+        // Avnt de faire l'importation on réinitialise les champs new et active à 0
         $productSearch = TableRegistry::get('products');
+        $productSearch->updateAll(['new' => 0, "active" => 0],'');
+
 
         $chunk = 1000; // for example
         //debug($csvNbrRows);
@@ -266,6 +263,8 @@ class ProductsController extends AppController
                 $productRow = array_merge($product_id, $productRow); // On ajoute l'id à l'array du product
                 $updateProductList[$key] = $productRow;
               } else {
+                // C'est un isert donc le produit est nouveau. On definit le champs new à 1
+                $productRow['new'] = '1';
                 //Si il n'existe pas on l'ajoute dans la liste des products à insert
                 $insertProductList[$key] = $productRow;
               }
@@ -439,6 +438,8 @@ class ProductsController extends AppController
     public function generateCatalogue($file)
     {
 
+      $catalogueHelpers= new CatalogueHelpers;
+
       $styleCategorie = (new StyleBuilder())
         ->setFontBold()
         ->setFontSize(22)
@@ -453,10 +454,46 @@ class ProductsController extends AppController
         ->setShouldWrapText(false)
         ->build();
 
+      $styleMarquesBlack = (new StyleBuilder())
+        ->setFontBold()
+        ->setFontSize(13)
+        ->setFontColor(Color::BLACK)
+        ->setShouldWrapText(false)
+        ->build();
+
+      $styleMarquesBlue = (new StyleBuilder())
+        ->setFontBold()
+        ->setFontSize(13)
+        ->setFontColor(Color::BLUE)
+        ->setShouldWrapText(false)
+        ->build();
+
+      $styleMarquesRed = (new StyleBuilder())
+        ->setFontBold()
+        ->setFontSize(13)
+        ->setFontColor(Color::RED)
+        ->setShouldWrapText(false)
+        ->build();
+
+      $styleProductRed = (new StyleBuilder())
+        ->setFontColor(Color::RED)
+        ->build();
+
+      $styleProductBlue = (new StyleBuilder())
+        ->setFontColor(Color::BLUE)
+        ->build();
+
+      $styleProductBlack = (new StyleBuilder())
+        ->build();
+
       $writer = WriterFactory::create(Type::XLSX); // for XLSX files
       $writer->openToFile($file);
 
-      foreach ($this->catalogueHeaders as $value) {
+      foreach ($catalogueHelpers->catalogueHeaders as $value) {
+        //Ajoute la date du premier jour du mois pour la colonnes DLV indicative
+        foreach ($value as &$str) {
+          $str = str_replace('au #1erduMois#', 'au '.date("01/m/Y"), $str);
+        }
         $writer->addRow($value);
       }
 
@@ -466,30 +503,31 @@ class ProductsController extends AppController
       // Ajout des catégories
       $categories = $categoriesList->find('all');
       foreach($categories as $category) {
-            //debug($categories);
-            $writer->addRow(['']);
-            $writer->addRow(['']);
-            $writer->addRowWithStyle([$category->title], $styleCategorie);
+            $writer->addRowWithStyle(['','','','','',$category->title], $styleCategorie);
 
             // Ajout des sous catégories
-
             $subcategories = $subcategoriesList->find('all')
                                                ->where(['category_id =' => $category->id]);
             foreach($subcategories as $subcategory) {
-                  $writer->addRowWithStyle([$subcategory->title], $stylesubCategorie);
+                  $writer->addRowWithStyle(['','','','','',$subcategory->title], $stylesubCategorie);
                   // Ajout des articles
                   $products = $this->Products->find('all')
                                              ->where(['Products.active =' => 1, 'Products.subcategory_id =' => $subcategory->id])
                                              ->contain(['origins','categories','subcategories','brands']);
+                  $listeProduct = []; // On initialise la liste produits pour chaque boucle de sous familles
                   foreach($products as $row) {
                     // Formatage de la date dlv
                     if(!empty($row->dlv)){  $row->dlv = date_format($row->dlv, 'd-m-Y'); }
+                    // Formatage du Tarif
+                    if(empty($row->tarif)){  $row->tarif = 'Au cours'; }
+                    // Formatage colonne New
+                    if($row->new == 1){  $row->new = 'New'; } else { $row->new = ''; }
 
                     // Information exporter pour chaque produit
                     $ligne = [
                       $row->code ,
                       '',
-                      '',
+                      $row->new,
                       $row->duree_vie,
                       $row->dlv,
                       $row->title,
@@ -504,26 +542,70 @@ class ProductsController extends AppController
                       '',
                       $row->poids,
                       $row->volume,
-                      '',
-                      '',
+                      $row->couche_palette,
+                      $row->colis_palette,
                       (string)$row->douanier,
                       $row->qualification,
                       $row->gencod];
 
+                    // Rechercher dans le tableau si la marque existe deja
+                    $key = $catalogueHelpers->searchForMarque($row->Brands['title'], $listeProduct);
 
-                      /*
-                       $row->remplacement_product, $row->title, $row->pcb , $row->prix,
-                    $row->uv, $row->poids, $row->volume, $row->dlv, $row->duree_vie, $row->gencod, (string)$row->douanier,
-                    $row->dangereux, $row->Origins['title'], $row->tva, $row->cdref, $row->Categories['code'],
-                    $row->Categories['title'], $row->Subcategories['code'], $row->Subcategories['title'],
-                    $row->entrepot, $row->supplier, $row->qualification, $row->couche_palette, $row->colis_palette,
-                    $row->pieceartk, $row->ifls_remplacement, $row->assortiment, $row->Brands['title']];*/
-                    // Ajout de la ligne au fichier Excel
-                    $writer->addRow($ligne);
+                    //Si elle n'existe pas on l'ajoute et on ajoute l'article l'article avec cette marque
+                    if(is_null($key)){
+                        $listeProduct[] = ['Marque' =>$row->Brands['title']]; // On ajoute la marque
+                        end($listeProduct); //Set the internal pointer to the end.
+                        $key = key($listeProduct); //Retrieve the key of the current element.
+                        $listeProduct[$key]['Produits'] = [$ligne]; // On ajoute le premier produit associé à cette marque
+                    // Si elle existe on ajoute l'article à la marque
+                    } else {
+                      $listeProduct[$key]['Produits'][] = $ligne; // On ajoute le produit associé à la marque
+                    }
 
                   }
-                  $writer->addRow(['']);
+
+                  // On classe le tableau par order alphabetique des marques
+                  sort($listeProduct);
+                  $key1erPrix = $catalogueHelpers->searchForMarque('1er Prix', $listeProduct); // get '1er Prix' key
+                  $keyMDD = $catalogueHelpers->searchForMarque('MDD', $listeProduct); // get 'MDD' key
+                  $headerMarque = array(); // Initialise le array des marques à mettre en tete de liste
+                  if(!is_null($key1erPrix)) { // Si la marque 1er prix existe
+                    $headerMarque[] = $listeProduct[$key1erPrix]; // On ajoute 1er prix au array des tetes de liste
+                    unset($listeProduct[$key1erPrix]); // Et on le supprime de la liste initiale
+                   }
+                  if(!is_null($keyMDD)) {// Si la marque MDD existe
+                    $headerMarque[] = $listeProduct[$keyMDD]; // On ajoute MDD au array des tetes de liste
+                    unset($listeProduct[$keyMDD]); // Et on le supprime de la liste initiale
+                  }
+                  //On fusionne les tableaux des marque de tete de liste avec le tableau initiale
+                  $listeProduct = array_merge($headerMarque, $listeProduct);
+                  //foreach qui va ajouter les lignes marues et produits au fichier Excel
+                  foreach ($listeProduct as $key => $value) {
+
+                    switch ($value['Marque']) {
+                      case '1er Prix':
+                        $styleMarques = $styleMarquesRed;
+                        $styleProduct = $styleProductRed;
+                        break;
+
+                      case 'MDD':
+                        $styleMarques = $styleMarquesBlue;
+                        $styleProduct = $styleProductBlue;
+                        break;
+
+                      default:
+                        $styleMarques = $styleMarquesBlack;
+                        $styleProduct = $styleProductBlack;
+                        break;
+                    }
+                    $writer->addRowWithStyle(['','','','','',$value['Marque']], $styleMarques);
+                    foreach ($value['Produits'] as $value) {
+                      $writer->addRowWithStyle($value, $styleProduct);
+                    }
+                  }
+
             }
+
       }
       $writer->close();
     }

@@ -366,7 +366,6 @@ class FieldCheck
           //Recherche dans subcategories le code correspondant l'id de la subcategorie
           $subcategoriesSearch = TableRegistry::get('Subcategories');
           $subcategory = $subcategoriesSearch->find()->where(['id =' => $subcategory_id])->first();
-          // TODO Si les subcat de vin peuvent etre multiple faire un matching avec les categories
           // Si la Subcat faire partie de la liste des subcat lié au vin
           if (in_array($subcategory->code, $subcategoriesVin)) {
             switch ($qualification) {
@@ -377,15 +376,7 @@ class FieldCheck
                 $value = 'VIN';
                 break;
             case 'M':
-
-                // Lister toutes les variantes de la marque Reflets de France
-                //$shortbrandList = $this->brandVariations('REFLETS DE FRANCE');
-                //Recherche si une des ces varintes correspond à la marque $value
-                //if(array_search($value, $shortbrandList['brand_titles'])){
-                  //$value = 'REFLETS DE FRANCE'; }
-                //else {
-                  $value = 'MDD';
-                //}
+                $value = 'MDD';
                 break;
             }
           }

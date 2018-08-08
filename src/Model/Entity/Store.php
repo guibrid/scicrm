@@ -29,6 +29,6 @@ class Store extends Entity
         'title' => true,
         'created' => true,
         'updated' => true,
-        'substores' => true
+        'categories' => true
     ];
 }

@@ -41,7 +41,7 @@ class StoresTable extends Table
 
         $this->addBehavior('Timestamp');
 
-        $this->hasMany('Substores', [
+        $this->hasMany('Categories', [
             'foreignKey' => 'store_id'
         ]);
     }

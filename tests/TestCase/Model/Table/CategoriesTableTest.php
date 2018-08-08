@@ -25,7 +25,8 @@ class CategoriesTableTest extends TestCase
      */
     public $fixtures = [
         'app.categories',
-        'app.substores',
+        'app.stores',
+        'app.products',
         'app.subcategories'
     ];
 

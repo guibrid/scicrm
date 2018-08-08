@@ -316,13 +316,11 @@ class FieldCheck
     //Recherche de brands
     public function searchBrands($field, $value, $product_code, $qualification)
     {
-        $sansmarqueList = ['', '.', '..', '...', 'SANS', 'SANS MARQUE', 'SS MARQUE.'];
-        // Si la marque est de type 'SANS MARQUE' et que Qualification = P ou M
+        $sansmarqueList = ['', '.', '..', '...', 'SANS', 'SANS MARQUE', 'SS MARQUE.', 'DIVERS', 'NC', 'GENERIQUE'];
+        // Si la marque est de type 'SANS MARQUE' et que Qualification = P
         if(array_search($value, $sansmarqueList)){
           if($qualification === 'P') { // On renome la Marque en '1er Prix'
             $value = '1er Prix';
-          } else if ($qualification === 'M') { // On renome la Marque en '1er Prix'
-            $value = 'MDD';
           }
         }
 
@@ -379,14 +377,15 @@ class FieldCheck
                 $value = 'VIN';
                 break;
             case 'M':
+
                 // Lister toutes les variantes de la marque Reflets de France
-                $shortbrandList = $this->brandVariations('REFLETS DE FRANCE');
+                //$shortbrandList = $this->brandVariations('REFLETS DE FRANCE');
                 //Recherche si une des ces varintes correspond à la marque $value
-                if(array_search($value, $shortbrandList['brand_titles'])){
-                  $value = 'REFLETS DE FRANCE'; }
-                else {
+                //if(array_search($value, $shortbrandList['brand_titles'])){
+                  //$value = 'REFLETS DE FRANCE'; }
+                //else {
                   $value = 'MDD';
-                }
+                //}
                 break;
             }
           }

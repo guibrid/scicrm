@@ -171,7 +171,7 @@ class ProductsController extends AppController
     public function updateBase()
     {
         $time_start = microtime(true);
-        $csvFilePath = "files/test7.csv";
+        $csvFilePath = "files/test8.csv";
         $csvNbrRows = count(file($csvFilePath));
         $reader = ReaderFactory::create(Type::CSV); // for CSV files
         $reader->setFieldDelimiter('|');
@@ -581,7 +581,6 @@ class ProductsController extends AppController
                   $listeProduct = array_merge($headerMarque, $listeProduct);
                   //foreach qui va ajouter les lignes marues et produits au fichier Excel
                   foreach ($listeProduct as $key => $value) {
-
                     switch ($value['Marque']) {
                       case '1er Prix':
                         $styleMarques = $styleMarquesRed;
@@ -598,6 +597,7 @@ class ProductsController extends AppController
                         $styleProduct = $styleProductBlack;
                         break;
                     }
+                    if(empty($value['Marque'])){$value['Marque'] = 'Autres marques';}
                     $writer->addRowWithStyle(['','','','','',$value['Marque']], $styleMarques);
                     foreach ($value['Produits'] as $value) {
                       $writer->addRowWithStyle($value, $styleProduct);

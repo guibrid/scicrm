@@ -9,8 +9,8 @@ use Cake\Validation\Validator;
 /**
  * Categories Model
  *
- * @property \App\Model\Table\SubstoresTable|\Cake\ORM\Association\BelongsTo $Substores
- * @property |\Cake\ORM\Association\HasMany $Products
+ * @property \App\Model\Table\StoresTable|\Cake\ORM\Association\BelongsTo $Stores
+ * @property \App\Model\Table\ProductsTable|\Cake\ORM\Association\HasMany $Products
  * @property \App\Model\Table\SubcategoriesTable|\Cake\ORM\Association\HasMany $Subcategories
  *
  * @method \App\Model\Entity\Category get($primaryKey, $options = [])
@@ -43,8 +43,8 @@ class CategoriesTable extends Table
 
         $this->addBehavior('Timestamp');
 
-        $this->belongsTo('Substores', [
-            'foreignKey' => 'substore_id'
+        $this->belongsTo('Stores', [
+            'foreignKey' => 'store_id'
         ]);
         $this->hasMany('Products', [
             'foreignKey' => 'category_id'
@@ -67,16 +67,27 @@ class CategoriesTable extends Table
             ->allowEmpty('id', 'create');
 
         $validator
-            ->allowEmpty('code');
+            ->scalar('code')
+            ->maxLength('code', 255)
+            ->requirePresence('code', 'create')
+            ->notEmpty('code');
 
         $validator
-            ->allowEmpty('title');
+            ->scalar('title')
+            ->maxLength('title', 255)
+            ->requirePresence('title', 'create')
+            ->notEmpty('title');
 
         $validator
-            ->allowEmpty('type');
+            ->scalar('type')
+            ->maxLength('type', 11)
+            ->requirePresence('type', 'create')
+            ->notEmpty('type');
 
         $validator
-            ->allowEmpty('active');
+            ->boolean('active')
+            ->requirePresence('active', 'create')
+            ->notEmpty('active');
 
         return $validator;
     }
@@ -90,7 +101,7 @@ class CategoriesTable extends Table
      */
     public function buildRules(RulesChecker $rules)
     {
-        //$rules->add($rules->existsIn(['substore_id'], 'Substores'));
+        //$rules->add($rules->existsIn(['store_id'], 'Stores'));
 
         return $rules;
     }

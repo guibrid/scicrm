@@ -162,7 +162,6 @@ public function validate($data) {
           } else { // Si c'est un update on garde le champs enregistré dans la base, et la valeur en erreur sera dans le warning
             $data['dangereux'] = $productSaved['dangereux'];
           }
-
         };
         break;
 
@@ -170,6 +169,7 @@ public function validate($data) {
           $data['origin_id']= $fieldCheck->sanitizeData($data['origin_id']); //Clean la variable
           // Recherche de l'id dans les tables origins et shortorigins
           $data['origin_id'] = $fieldCheck->searchOrigin($key, $data['origin_id'], $data['code']);
+          //TODO Add the // INSERT / UPDATE check
         break;
 
       case 'tva': // numerique ou vide
@@ -201,6 +201,7 @@ public function validate($data) {
         $data['category_id'] = $fieldCheck->checkOldCategories($data['category_id']); // Vérifier si le code catégorie est un ancien code
         // Recherche de le code dans les tables categories
         $data['category_id'] = $fieldCheck->searchCategory($key, $data['category_id'], $data['entrepot'], $data['code']);
+        //TODO Add the // INSERT / UPDATE check
         break;
 
       case 'subcategory_id': // entier, no empty(alert)
@@ -208,7 +209,7 @@ public function validate($data) {
         $data['subcategory_id']= $fieldCheck->checkOldSubCategories($data['subcategory_id']); // Vérifier si le code subcatégorie est un ancien code
         // Recherche de le code dans les tables subcategories
         $data['subcategory_id'] = $fieldCheck->searchSubcategory($key, $data['subcategory_id'], $data['entrepot'], $data['code']);
-
+        //TODO Add the // INSERT / UPDATE check
         break;
 
       case 'entrepot':
@@ -294,6 +295,7 @@ public function validate($data) {
         $data['brand_id'] = $fieldCheck->checkVins($key, $data['brand_id'], $data['code'], $data['subcategory_id'], $data['qualification'], $listeSubcategoriVin);
         // Recherche de l'id dans les tables brands et shortbrands
         $data['brand_id'] = $fieldCheck->searchBrands($key, $data['brand_id'] , $data['code'], $data['qualification']);
+        //TODO Add the // INSERT / UPDATE check
         break;
   }
 };

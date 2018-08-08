@@ -10,12 +10,13 @@ use Cake\ORM\Entity;
  * @property string $code
  * @property string $title
  * @property string $type
- * @property int $substore_id
+ * @property int $store_id
  * @property bool $active
  * @property \Cake\I18n\FrozenTime $created
  * @property \Cake\I18n\FrozenTime $modified
  *
- * @property \App\Model\Entity\Substore $substore
+ * @property \App\Model\Entity\Store $store
+ * @property \App\Model\Entity\Product[] $products
  * @property \App\Model\Entity\Subcategory[] $subcategories
  */
 class Category extends Entity
@@ -34,11 +35,12 @@ class Category extends Entity
         'code' => true,
         'title' => true,
         'type' => true,
-        'substore_id' => true,
+        'store_id' => true,
         'active' => true,
         'created' => true,
         'modified' => true,
-        'substore' => true,
+        'store' => true,
+        'products' => true,
         'subcategories' => true
     ];
 }

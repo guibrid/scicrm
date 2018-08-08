@@ -8,8 +8,10 @@
     <ul class="side-nav">
         <li class="heading"><?= __('Actions') ?></li>
         <li><?= $this->Html->link(__('List Categories'), ['action' => 'index']) ?></li>
-        <li><?= $this->Html->link(__('List Substores'), ['controller' => 'Substores', 'action' => 'index']) ?></li>
-        <li><?= $this->Html->link(__('New Substore'), ['controller' => 'Substores', 'action' => 'add']) ?></li>
+        <li><?= $this->Html->link(__('List Stores'), ['controller' => 'Stores', 'action' => 'index']) ?></li>
+        <li><?= $this->Html->link(__('New Store'), ['controller' => 'Stores', 'action' => 'add']) ?></li>
+        <li><?= $this->Html->link(__('List Products'), ['controller' => 'Products', 'action' => 'index']) ?></li>
+        <li><?= $this->Html->link(__('New Product'), ['controller' => 'Products', 'action' => 'add']) ?></li>
         <li><?= $this->Html->link(__('List Subcategories'), ['controller' => 'Subcategories', 'action' => 'index']) ?></li>
         <li><?= $this->Html->link(__('New Subcategory'), ['controller' => 'Subcategories', 'action' => 'add']) ?></li>
     </ul>
@@ -22,7 +24,7 @@
             echo $this->Form->control('code');
             echo $this->Form->control('title');
             echo $this->Form->control('type');
-            echo $this->Form->control('substore_id');
+            echo $this->Form->control('store_id', ['options' => $stores, 'empty' => true]);
             echo $this->Form->control('active');
         ?>
     </fieldset>

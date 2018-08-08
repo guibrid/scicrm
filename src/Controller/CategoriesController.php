@@ -25,7 +25,7 @@ class CategoriesController extends AppController
     public function index()
     {
         $this->paginate = [
-            'contain' => ['Substores']
+            'contain' => ['Stores']
         ];
         $categories = $this->paginate($this->Categories);
 
@@ -42,7 +42,7 @@ class CategoriesController extends AppController
     public function view($id = null)
     {
         $category = $this->Categories->get($id, [
-            'contain' => ['Substores', 'Subcategories']
+            'contain' => ['Stores', 'Subcategories']
         ]);
 
         $this->set('category', $category);
@@ -66,7 +66,7 @@ class CategoriesController extends AppController
             $this->Flash->error(__('The category could not be saved. Please, try again.'));
         }
         $substores = $this->Categories->Substores->find('list', ['limit' => 200]);
-        $this->set(compact('category', 'substores'));
+        $this->set(compact('category', 'Stores'));
     }
 
     /**
@@ -91,7 +91,7 @@ class CategoriesController extends AppController
             $this->Flash->error(__('The category could not be saved. Please, try again.'));
         }
         $substores = $this->Categories->Substores->find('list', ['limit' => 200]);
-        $this->set(compact('category', 'substores'));
+        $this->set(compact('category', 'Stores'));
     }
 
     /**
@@ -123,7 +123,7 @@ class CategoriesController extends AppController
     {
       $reader = ReaderFactory::create(Type::CSV); // for CSV files
       $reader->setFieldDelimiter('|');
-      $reader->open('files/categories.csv');
+      $reader->open('files/newcategorie.csv');
       $i = 0;
       foreach ($reader->getSheetIterator() as $sheet) {
 
@@ -134,14 +134,14 @@ class CategoriesController extends AppController
           $categoriesRow['title'] = trim($categoriesRow[1]);
           $categoriesRow['type'] = trim($categoriesRow[2]);
 
-          // On cherche dans la table Substores l'id du substore correspondante
-          $substores = TableRegistry::get('Substores');
-          $substoreQuery = $substores->find('all')
-                                ->where(['code =' => $categoriesRow[3]]);
+          // On cherche dans la table Stores l'id du store correspondante
+          $stores = TableRegistry::get('Substores');
+          $storeQuery = $stores->find('all')
+                                ->where(['id =' => $categoriesRow[3]]);
           //Et on l'associe au champs substore_id
-          $categoriesRow['substore_id'] = $substoreQuery->first()->id;
-          //Si le Substore n'existe pas on debug
-          if (is_null($categoriesRow['substore_id'])){
+          $categoriesRow['store_id'] = $storeQuery->first()->id;
+          //Si le store n'existe pas on debug
+          if (is_null($categoriesRow['store_id'])){
             debug($categoriesRow);
           }
 

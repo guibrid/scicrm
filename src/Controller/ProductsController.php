@@ -5,8 +5,6 @@ use App\Controller\AppController;
 use Box\Spout\Reader\ReaderFactory;
 use Box\Spout\Common\Type;
 use Box\Spout\Writer\WriterFactory;
-use Box\Spout\Writer\Style\StyleBuilder;
-use Box\Spout\Writer\Style\Color;
 use Cake\ORM\TableRegistry;
 use App\Utility\FieldCheck;
 use App\Utility\CatalogueHelpers;
@@ -181,68 +179,7 @@ class ProductsController extends AppController
         $productSearch = TableRegistry::get('products');
         $productSearch->updateAll(['new' => 0, "active" => 0],'');
 
-
-        $chunk = 1000; // for example
-        //debug($csvNbrRows);
-        //debug($chunk);
-        $loop = ceil($csvNbrRows / $chunk);
-        //debug($loop);
         $fieldCheck = new FieldCheck;
-
-        // AJOUT AVEC CHUNKS
-        /*foreach ($reader->getSheetIterator() as $sheet) {
-
-          // Faire boucle de 1000 ligne
-          $updateProductList = [];
-          $insertProductList = [];
-
-          foreach ($sheet->getRowIterator() as $key => $productRow) {
-
-            if( $key === $chunk){
-              Debug($chunk);
-
-              // Si l'array des nouveaux articles n'est pas vide, on insert les produits
-              if(!empty($insertProductList)){
-                $this->insertProductList($insertProductList);
-              }
-
-              // Si l'array des articles à mettre à jour n'est pas vide, on update
-              if(!empty($updateProductList)){
-                $this->updateProductList($updateProductList);
-              }
-              $chunk = $chunk + 1000;
-              $updateProductList = [];
-              $insertProductList = [];
-            } else {
-              // on ajoute les rows a l'array d'insert ou d'update
-              // On renome les keys du array avec les entetes de la table products
-              $productRow = $this->renameHeaderArray($productRow);
-
-              // Si le produit est actif on l'ajoute ou on l'update dans la base
-              if($fieldCheck->checkActiveProduct($productRow['remplacement_product'])){
-
-                //On recherche si le code article existe dans la table products
-                $product = $productSearch->find('all')
-                                         ->select(['id'])
-                                         ->where(['code' => $productRow['code']]);
-
-                if ( $product->count() === 1 ) { // Nbr de resultat de le réquete
-                  //Si il existe on l'ajoute dans la liste des products à update
-                  $product_id = $product->first()->toArray(); // On récupere l'id du produit
-                  $productRow = array_merge($product_id, $productRow); // On ajoute l'id à l'array du product
-                  $updateProductList[$key] = $productRow;
-                } else {
-                  //Si il n'existe pas on l'ajoute dans la liste des products à insert
-                  $insertProductList[$key] = $productRow;
-                }
-
-              }
-
-            }
-
-          }
-
-        }*/// FIN avec CHUNKS
 
         // AJOUT SANS CHUNKS
         foreach ($reader->getSheetIterator() as $sheet) {
@@ -284,8 +221,6 @@ class ProductsController extends AppController
           // Fin de la boucle des 1000 lignes
 
         }// FIN SANS CHUNKS
-
-
 
         $reader->close();
 
@@ -360,7 +295,7 @@ class ProductsController extends AppController
       }
       // Error ou succés
       if (isset($listErrors)) { // On affiche les erreurs si il y en a
-        echo $listErrors;
+        debug($listErrors);
       } else {
         $this->Flash->success(__('Les mises à jour des produits ont été effectué avec succès.'));
       }
@@ -403,8 +338,6 @@ class ProductsController extends AppController
      */
     public function export($type = null)
     {
-
-
         $emptyXls = 'files/empty.xlsx';
         $exportFile = 'files/'.time().'.xlsx';
         if (!copy($emptyXls, $exportFile)) {
@@ -416,8 +349,7 @@ class ProductsController extends AppController
             // code...
             $finalFile = 'files/catalogue-'.time().'.xlsx';
             rename($exportFile, $finalFile);
-            $this->generateCatalogue($finalFile);
-            debug('Generate catalogue');
+            if($this->generateCatalogue($finalFile)) { debug('Generate catalogue'); } else { debug('Error'); }
             break;
 
           case 'commande':
@@ -434,60 +366,14 @@ class ProductsController extends AppController
     }
 
     /**
-     * Export method
-     *
-     * @return \Cake\Http\Response|void
+     * generateCatalogue method
+     * A partir des articles dans la table products, générer le fichier excel Catalogue
+     * @param string| $file = Path du fichier Excel
+     * @return true| Return true quand le fichier est généré
      */
     public function generateCatalogue($file)
     {
-
       $catalogueHelpers= new CatalogueHelpers;
-
-      $styleCategorie = (new StyleBuilder())
-        ->setFontBold()
-        ->setFontSize(22)
-        ->setFontColor(Color::ORANGE)
-        ->setShouldWrapText(false)
-        ->build();
-
-      $stylesubCategorie = (new StyleBuilder())
-        ->setFontBold()
-        ->setFontSize(16)
-        ->setFontColor(Color::BLACK)
-        ->setShouldWrapText(false)
-        ->build();
-
-      $styleMarquesBlack = (new StyleBuilder())
-        ->setFontBold()
-        ->setFontSize(13)
-        ->setFontColor(Color::BLACK)
-        ->setShouldWrapText(false)
-        ->build();
-
-      $styleMarquesBlue = (new StyleBuilder())
-        ->setFontBold()
-        ->setFontSize(13)
-        ->setFontColor(Color::BLUE)
-        ->setShouldWrapText(false)
-        ->build();
-
-      $styleMarquesRed = (new StyleBuilder())
-        ->setFontBold()
-        ->setFontSize(13)
-        ->setFontColor(Color::RED)
-        ->setShouldWrapText(false)
-        ->build();
-
-      $styleProductRed = (new StyleBuilder())
-        ->setFontColor(Color::RED)
-        ->build();
-
-      $styleProductBlue = (new StyleBuilder())
-        ->setFontColor(Color::BLUE)
-        ->build();
-
-      $styleProductBlack = (new StyleBuilder())
-        ->build();
 
       $writer = WriterFactory::create(Type::XLSX); // for XLSX files
       $writer->openToFile($file);
@@ -507,7 +393,9 @@ class ProductsController extends AppController
       // Ajouter la boucle des stores
       $stores = $storesList->find('all');
       foreach($stores as $store) {
-            $writer->addRowWithStyle(['','','','','',$store->title], $styleCategorie);
+            $writer->addRowWithStyle(
+                  ['','','','','',$store->title],
+                  $catalogueHelpers->getTitleStyle(22, 'FFC000'));
             // Ajout des catégories
             $categories = $categoriesList->find('all')
                                          ->where(['store_id =' => $store->id]);
@@ -516,15 +404,16 @@ class ProductsController extends AppController
                   $subcategories = $subcategoriesList->find('all')
                                                      ->where(['category_id =' => $category->id]);
                   foreach($subcategories as $subcategory) {
-                        $writer->addRowWithStyle(['','','','','',$subcategory->title], $stylesubCategorie);
+                        $writer->addRowWithStyle(
+                            ['','','','','',$subcategory->title],
+                            $catalogueHelpers->getTitleStyle(16, '000000'));
                         // Ajout des articles
                         $products = $this->Products->find('all')
                                                    ->where(['Products.active =' => 1, 'Products.subcategory_id =' => $subcategory->id])
                                                    ->contain(['origins','categories','subcategories','brands']);
-                        $listQualiM = [];
-                        $listQualiP = [];
-                        $listQualiA = [];
-                        $listeProduct = []; // On initialise la liste produits pour chaque boucle de sous familles
+                        $listQualiM = []; // Initialisation des articles avec le code qualification M
+                        $listQualiP = []; // Initialisation des articles avec le code qualification P
+                        $listQualiA = []; // Initialisation des articles avec le code qualification A
                         foreach($products as $row) {
 
                           // Formatage de la date dlv
@@ -536,28 +425,12 @@ class ProductsController extends AppController
 
                           // Information exporter pour chaque produit
                           $ligne = [
-                            $row->code ,
-                            '',
-                            $row->new,
-                            $row->duree_vie,
-                            $row->dlv,
-                            $row->title,
-                            $row->Brands['title'],
-                            $row->pieceartk,
-                            $row->pcb,
-                            $row->prix,
-                            $row->uv,
-                            '',
-                            '',
-                            '',
-                            '',
-                            $row->poids,
-                            $row->volume,
-                            (int)$row->couche_palette,
-                            (int)$row->colis_palette,
-                            (string)$row->douanier,
-                            $row->qualification,
-                            $row->gencod];
+                            $row->code , '', $row->new, $row->duree_vie, $row->dlv,
+                            $row->title, $row->Brands['title'], $row->pieceartk,
+                            $row->pcb, $row->prix, $row->uv, '', '', '', '',
+                            $row->poids, $row->volume, (int)$row->couche_palette,
+                            (int)$row->colis_palette, (string)$row->douanier,
+                            $row->qualification, $row->gencod];
 
                             switch ($row->qualification) {
                               case 'P':
@@ -573,88 +446,33 @@ class ProductsController extends AppController
                                 break;
                             }
 
-                          // Rechercher dans le tableau si la marque existe deja
-                          /*$key = $catalogueHelpers->searchForMarque($row->Brands['title'], $listeProduct);
-
-                          //Si elle n'existe pas on l'ajoute et on ajoute l'article l'article avec cette marque
-                          if(is_null($key)){
-                              $listeProduct[] = ['Marque' =>$row->Brands['title']]; // On ajoute la marque
-                              end($listeProduct); //Set the internal pointer to the end.
-                              $key = key($listeProduct); //Retrieve the key of the current element.
-                              $listeProduct[$key]['Produits'] = [$ligne]; // On ajoute le premier produit associé à cette marque
-                          // Si elle existe on ajoute l'article à la marque
-                          } else {
-                            $listeProduct[$key]['Produits'][] = $ligne; // On ajoute le produit associé à la marque
-                          }*/
-
                         }
-                        //debug($catalogueHelpers->getProductsToDisplay($listQualiM, 'M'));
-                        /*$listeProducts = $catalogueHelpers->getProductsToDisplay($listQualiA);
-                        $P = $catalogueHelpers->getProductsToDisplay($listQualiP);
-                        $M = $catalogueHelpers->getProductsToDisplay($listQualiM, 'M');
 
-                        if(!is_null($M)) {
-                          $listeProducts = array_merge($M,$listeProducts);
-                        }
-                        if(!is_null($P)){
-                          $listeProducts = array_merge($P,$listeProducts);
-                        }*/
                         $listeProducts = array_merge($catalogueHelpers->getProductsToDisplay($listQualiM, 'M'),
                                                      $catalogueHelpers->getProductsToDisplay($listQualiA));
                         $listeProducts = array_merge($catalogueHelpers->getProductsToDisplay($listQualiP),$listeProducts);
 
-
-                        //debug($listeProducts);
-
-                        // On classe le tableau par order alphabetique des marques
-
-                        /*$key1erPrix = $catalogueHelpers->searchForMarque('1er Prix', $listeProduct); // get '1er Prix' key
-                        $keyMDD = $catalogueHelpers->searchForMarque('MDD', $listeProduct); // get 'MDD' key
-                        $headerMarque = array(); // Initialise le array des marques à mettre en tete de liste
-                        if(!is_null($key1erPrix)) { // Si la marque 1er prix existe
-                          $headerMarque[] = $listeProduct[$key1erPrix]; // On ajoute 1er prix au array des tetes de liste
-                          unset($listeProduct[$key1erPrix]); // Et on le supprime de la liste initiale
-                         }
-                        if(!is_null($keyMDD)) {// Si la marque MDD existe
-                          $headerMarque[] = $listeProduct[$keyMDD]; // On ajoute MDD au array des tetes de liste
-                          unset($listeProduct[$keyMDD]); // Et on le supprime de la liste initiale
-                        }
-                        //On fusionne les tableaux des marque de tete de liste avec le tableau initiale
-                        $listeProduct = array_merge($headerMarque, $listeProduct);*/
-                        //foreach qui va ajouter les lignes marues et produits au fichier Excel
+                        //foreach qui va ajouter les lignes marques et produits au fichier Excel
                         foreach ($listeProducts as $key => $value) {
-                          //debug($value);
-                          switch ($value['Marque']) {
-                            case '1er Prix':
-                              $styleMarques = $styleMarquesRed;
-                              $styleProduct = $styleProductRed;
-                              break;
+                          //Get le style en fonction de la marque
+                          $style = $catalogueHelpers->renderStyle($value['Marque']);
 
-                            case 'MDD':
-                              $styleMarques = $styleMarquesBlue;
-                              $styleProduct = $styleProductBlue;
-                              break;
+                          if(empty($value['Marque'])){ $value['Marque'] = 'Autres marques';} // Si la marque n'existe pas on cree autres marques
+                          $writer->addRowWithStyle(['','','','','',$value['Marque']], $style['Marque']); // On créé la ligne Marque
 
-                            default:
-                              $styleMarques = $styleMarquesBlack;
-                              $styleProduct = $styleProductBlack;
-                              break;
+                          //On boucle sur les ligne produit associé à la marque
+                          foreach ($value['Produits'] as $key => $article) {
+                            $writer->addRowWithStyle($article, $style['Product']);
                           }
-                          //debug($value);
-                          if(empty($value['Marque'])){$value['Marque'] = 'Autres marques';}
-                          $writer->addRowWithStyle(['','','','','',$value['Marque']], $styleMarques);
-                          //debug($value['Produits']);
-                            foreach ($value['Produits'] as $key => $article) {
-                              //debug($article);
-                              $writer->addRowWithStyle($article, $styleProduct);
-                            }
                         }
 
-                  }//Foreach souscategorie end
+                  } //Foreach souscategorie end
 
-            }//Foreach Categorie end
+            } //Foreach Categorie end
 
-      }//Foreach Store end
+      } //Foreach Store end
       $writer->close();
+
+      return true;
     }
 }

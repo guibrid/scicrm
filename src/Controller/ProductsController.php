@@ -420,9 +420,12 @@ class ProductsController extends AppController
             debug('Generate catalogue');
             break;
 
+          case 'commande':
+
+            break;
+
           default:
-            // code...
-            debug('Action inconnue');
+
             break;
         }
         die;
@@ -499,114 +502,159 @@ class ProductsController extends AppController
 
       $subcategoriesList = TableRegistry::get('subcategories');
       $categoriesList = TableRegistry::get('categories');
+      $storesList = TableRegistry::get('stores');
 
-      // Ajout des catégories
-      $categories = $categoriesList->find('all');
-      foreach($categories as $category) {
-            $writer->addRowWithStyle(['','','','','',$category->title], $styleCategorie);
+      // Ajouter la boucle des stores
+      $stores = $storesList->find('all');
+      foreach($stores as $store) {
+            $writer->addRowWithStyle(['','','','','',$store->title], $styleCategorie);
+            // Ajout des catégories
+            $categories = $categoriesList->find('all')
+                                         ->where(['store_id =' => $store->id]);
+            foreach($categories as $category) {
+                  // Ajout des sous catégories
+                  $subcategories = $subcategoriesList->find('all')
+                                                     ->where(['category_id =' => $category->id]);
+                  foreach($subcategories as $subcategory) {
+                        $writer->addRowWithStyle(['','','','','',$subcategory->title], $stylesubCategorie);
+                        // Ajout des articles
+                        $products = $this->Products->find('all')
+                                                   ->where(['Products.active =' => 1, 'Products.subcategory_id =' => $subcategory->id])
+                                                   ->contain(['origins','categories','subcategories','brands']);
+                        $listQualiM = [];
+                        $listQualiP = [];
+                        $listQualiA = [];
+                        $listeProduct = []; // On initialise la liste produits pour chaque boucle de sous familles
+                        foreach($products as $row) {
 
-            // Ajout des sous catégories
-            $subcategories = $subcategoriesList->find('all')
-                                               ->where(['category_id =' => $category->id]);
-            foreach($subcategories as $subcategory) {
-                  $writer->addRowWithStyle(['','','','','',$subcategory->title], $stylesubCategorie);
-                  // Ajout des articles
-                  $products = $this->Products->find('all')
-                                             ->where(['Products.active =' => 1, 'Products.subcategory_id =' => $subcategory->id])
-                                             ->contain(['origins','categories','subcategories','brands']);
-                  $listeProduct = []; // On initialise la liste produits pour chaque boucle de sous familles
-                  foreach($products as $row) {
-                    // Formatage de la date dlv
-                    if(!empty($row->dlv)){  $row->dlv = date_format($row->dlv, 'd-m-Y'); }
-                    // Formatage du Tarif
-                    if(empty($row->tarif)){  $row->tarif = 'Au cours'; }
-                    // Formatage colonne New
-                    if($row->new == 1){  $row->new = 'New'; } else { $row->new = ''; }
+                          // Formatage de la date dlv
+                          if(!empty($row->dlv)){  $row->dlv = date_format($row->dlv, 'd-m-Y'); }
+                          // Formatage du Tarif
+                          if(empty($row->tarif)){  $row->tarif = 'Au cours'; }
+                          // Formatage colonne New
+                          if($row->new == 1){  $row->new = 'New'; } else { $row->new = ''; }
 
-                    // Information exporter pour chaque produit
-                    $ligne = [
-                      $row->code ,
-                      '',
-                      $row->new,
-                      $row->duree_vie,
-                      $row->dlv,
-                      $row->title,
-                      $row->Brands['title'],
-                      $row->pieceartk,
-                      $row->pcb,
-                      $row->prix,
-                      $row->uv,
-                      '',
-                      '',
-                      '',
-                      '',
-                      $row->poids,
-                      $row->volume,
-                      $row->couche_palette,
-                      $row->colis_palette,
-                      (string)$row->douanier,
-                      $row->qualification,
-                      $row->gencod];
+                          // Information exporter pour chaque produit
+                          $ligne = [
+                            $row->code ,
+                            '',
+                            $row->new,
+                            $row->duree_vie,
+                            $row->dlv,
+                            $row->title,
+                            $row->Brands['title'],
+                            $row->pieceartk,
+                            $row->pcb,
+                            $row->prix,
+                            $row->uv,
+                            '',
+                            '',
+                            '',
+                            '',
+                            $row->poids,
+                            $row->volume,
+                            (int)$row->couche_palette,
+                            (int)$row->colis_palette,
+                            (string)$row->douanier,
+                            $row->qualification,
+                            $row->gencod];
 
-                    // Rechercher dans le tableau si la marque existe deja
-                    $key = $catalogueHelpers->searchForMarque($row->Brands['title'], $listeProduct);
+                            switch ($row->qualification) {
+                              case 'P':
+                                $listQualiP[] = $ligne;
+                                break;
 
-                    //Si elle n'existe pas on l'ajoute et on ajoute l'article l'article avec cette marque
-                    if(is_null($key)){
-                        $listeProduct[] = ['Marque' =>$row->Brands['title']]; // On ajoute la marque
-                        end($listeProduct); //Set the internal pointer to the end.
-                        $key = key($listeProduct); //Retrieve the key of the current element.
-                        $listeProduct[$key]['Produits'] = [$ligne]; // On ajoute le premier produit associé à cette marque
-                    // Si elle existe on ajoute l'article à la marque
-                    } else {
-                      $listeProduct[$key]['Produits'][] = $ligne; // On ajoute le produit associé à la marque
-                    }
+                              case 'M':
+                                $listQualiM[] = $ligne;
+                                break;
 
-                  }
+                              default:
+                                $listQualiA[] = $ligne;
+                                break;
+                            }
 
-                  // On classe le tableau par order alphabetique des marques
-                  sort($listeProduct);
-                  $key1erPrix = $catalogueHelpers->searchForMarque('1er Prix', $listeProduct); // get '1er Prix' key
-                  $keyMDD = $catalogueHelpers->searchForMarque('MDD', $listeProduct); // get 'MDD' key
-                  $headerMarque = array(); // Initialise le array des marques à mettre en tete de liste
-                  if(!is_null($key1erPrix)) { // Si la marque 1er prix existe
-                    $headerMarque[] = $listeProduct[$key1erPrix]; // On ajoute 1er prix au array des tetes de liste
-                    unset($listeProduct[$key1erPrix]); // Et on le supprime de la liste initiale
-                   }
-                  if(!is_null($keyMDD)) {// Si la marque MDD existe
-                    $headerMarque[] = $listeProduct[$keyMDD]; // On ajoute MDD au array des tetes de liste
-                    unset($listeProduct[$keyMDD]); // Et on le supprime de la liste initiale
-                  }
-                  //On fusionne les tableaux des marque de tete de liste avec le tableau initiale
-                  $listeProduct = array_merge($headerMarque, $listeProduct);
-                  //foreach qui va ajouter les lignes marues et produits au fichier Excel
-                  foreach ($listeProduct as $key => $value) {
-                    switch ($value['Marque']) {
-                      case '1er Prix':
-                        $styleMarques = $styleMarquesRed;
-                        $styleProduct = $styleProductRed;
-                        break;
+                          // Rechercher dans le tableau si la marque existe deja
+                          /*$key = $catalogueHelpers->searchForMarque($row->Brands['title'], $listeProduct);
 
-                      case 'MDD':
-                        $styleMarques = $styleMarquesBlue;
-                        $styleProduct = $styleProductBlue;
-                        break;
+                          //Si elle n'existe pas on l'ajoute et on ajoute l'article l'article avec cette marque
+                          if(is_null($key)){
+                              $listeProduct[] = ['Marque' =>$row->Brands['title']]; // On ajoute la marque
+                              end($listeProduct); //Set the internal pointer to the end.
+                              $key = key($listeProduct); //Retrieve the key of the current element.
+                              $listeProduct[$key]['Produits'] = [$ligne]; // On ajoute le premier produit associé à cette marque
+                          // Si elle existe on ajoute l'article à la marque
+                          } else {
+                            $listeProduct[$key]['Produits'][] = $ligne; // On ajoute le produit associé à la marque
+                          }*/
 
-                      default:
-                        $styleMarques = $styleMarquesBlack;
-                        $styleProduct = $styleProductBlack;
-                        break;
-                    }
-                    if(empty($value['Marque'])){$value['Marque'] = 'Autres marques';}
-                    $writer->addRowWithStyle(['','','','','',$value['Marque']], $styleMarques);
-                    foreach ($value['Produits'] as $value) {
-                      $writer->addRowWithStyle($value, $styleProduct);
-                    }
-                  }
+                        }
+                        //debug($catalogueHelpers->getProductsToDisplay($listQualiM, 'M'));
+                        /*$listeProducts = $catalogueHelpers->getProductsToDisplay($listQualiA);
+                        $P = $catalogueHelpers->getProductsToDisplay($listQualiP);
+                        $M = $catalogueHelpers->getProductsToDisplay($listQualiM, 'M');
 
-            }
+                        if(!is_null($M)) {
+                          $listeProducts = array_merge($M,$listeProducts);
+                        }
+                        if(!is_null($P)){
+                          $listeProducts = array_merge($P,$listeProducts);
+                        }*/
+                        $listeProducts = array_merge($catalogueHelpers->getProductsToDisplay($listQualiM, 'M'),
+                                                     $catalogueHelpers->getProductsToDisplay($listQualiA));
+                        $listeProducts = array_merge($catalogueHelpers->getProductsToDisplay($listQualiP),$listeProducts);
 
-      }
+
+                        //debug($listeProducts);
+
+                        // On classe le tableau par order alphabetique des marques
+
+                        /*$key1erPrix = $catalogueHelpers->searchForMarque('1er Prix', $listeProduct); // get '1er Prix' key
+                        $keyMDD = $catalogueHelpers->searchForMarque('MDD', $listeProduct); // get 'MDD' key
+                        $headerMarque = array(); // Initialise le array des marques à mettre en tete de liste
+                        if(!is_null($key1erPrix)) { // Si la marque 1er prix existe
+                          $headerMarque[] = $listeProduct[$key1erPrix]; // On ajoute 1er prix au array des tetes de liste
+                          unset($listeProduct[$key1erPrix]); // Et on le supprime de la liste initiale
+                         }
+                        if(!is_null($keyMDD)) {// Si la marque MDD existe
+                          $headerMarque[] = $listeProduct[$keyMDD]; // On ajoute MDD au array des tetes de liste
+                          unset($listeProduct[$keyMDD]); // Et on le supprime de la liste initiale
+                        }
+                        //On fusionne les tableaux des marque de tete de liste avec le tableau initiale
+                        $listeProduct = array_merge($headerMarque, $listeProduct);*/
+                        //foreach qui va ajouter les lignes marues et produits au fichier Excel
+                        foreach ($listeProducts as $key => $value) {
+                          //debug($value);
+                          switch ($value['Marque']) {
+                            case '1er Prix':
+                              $styleMarques = $styleMarquesRed;
+                              $styleProduct = $styleProductRed;
+                              break;
+
+                            case 'MDD':
+                              $styleMarques = $styleMarquesBlue;
+                              $styleProduct = $styleProductBlue;
+                              break;
+
+                            default:
+                              $styleMarques = $styleMarquesBlack;
+                              $styleProduct = $styleProductBlack;
+                              break;
+                          }
+                          //debug($value);
+                          if(empty($value['Marque'])){$value['Marque'] = 'Autres marques';}
+                          $writer->addRowWithStyle(['','','','','',$value['Marque']], $styleMarques);
+                          //debug($value['Produits']);
+                            foreach ($value['Produits'] as $key => $article) {
+                              //debug($article);
+                              $writer->addRowWithStyle($article, $styleProduct);
+                            }
+                        }
+
+                  }//Foreach souscategorie end
+
+            }//Foreach Categorie end
+
+      }//Foreach Store end
       $writer->close();
     }
 }

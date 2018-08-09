@@ -117,7 +117,6 @@ class ProductsController extends AppController
         ]);
 
         if ($this->request->is(['patch', 'post', 'put'])) {
-
             $product = $this->Products->patchEntity($product, $this->request->getData());
             if ($this->Products->save($product)) {
                 $this->Flash->success(__('The product has been saved.'));
@@ -475,4 +474,40 @@ class ProductsController extends AppController
 
       return true;
     }
+
+    /**
+     * updateSansMarques method
+     * Mettre a jour via une table de correspondance CSV les articles sans marques ['Code produit', 'Libelle de la marque']
+     * @return true| Return true quand l'update est terminé
+     */
+    public function updateSansMarques()
+    {
+      $time_start = microtime(true);
+      $csvFilePath = "files/updatesansmarques.csv";
+      //$csvNbrRows = count(file($csvFilePath));
+      $reader = ReaderFactory::create(Type::CSV); // for CSV files
+      $reader->setFieldDelimiter('|');
+      $reader->open($csvFilePath);
+
+      foreach ($reader->getSheetIterator() as $sheet) {
+
+        foreach ($sheet->getRowIterator() as $key => $productRow) {
+          $brands = TableRegistry::get('brands');
+          $brands = $brands->find('all')
+                            ->where(['title =' => $productRow[1]])
+                            ->first();
+
+          $product =  $this->Products->find('all')
+                        ->where(['code =' => $productRow[0]]);
+
+          $product->update()
+                  ->set(['brand_id' => $brands->id])
+                  ->where(['code' => $productRow[0]])
+                  ->execute();
+
+        }
+      }
+          debug('Mise à jour des marques OK');
+    }
+
 }

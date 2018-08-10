@@ -70,7 +70,7 @@ class CatalogueHelpers
           break;
       }
       //debug($styles);
-      
+
       return $styles;
 
     }
@@ -130,6 +130,23 @@ class CatalogueHelpers
       return $listeProduct;
     }
 
+
+    /**
+     * getProductsToDisplay method
+     * Trie la liste des articles par marques lors de l'affichage de MDD
+     * @param array| $array = tableau des produits
+     * @return array| // Retourne la liste des produits trié par marque
+     */
+    public function sortMDDMarques($array) {
+      $marques = array();
+      // Créer un tableau avec toutes les marques des produits
+      foreach ($array as $key => $row) {
+          $marques[]  = &$row[6];
+      }
+      // Trié le tableau par la liste des marques créé ci-dessus
+      array_multisort($marques, $array);
+      return $array;
+    }
 
 
 }

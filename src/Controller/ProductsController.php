@@ -348,7 +348,18 @@ class ProductsController extends AppController
             // code...
             $finalFile = 'files/catalogue-'.time().'.xlsx';
             rename($exportFile, $finalFile);
-            if($this->generateCatalogue($finalFile)) { debug('Generate catalogue'); } else { debug('Error'); }
+            $this->generateSommaire($finalFile);
+            if($this->generateCatalogue($finalFile)) {
+              debug('Generate catalogue');
+              debug('- Col A : Convertir en Nombre');
+              debug('- Col L : Formule = B * I');
+              debug('- Col M : Formule = B * P');
+              debug('- Col N : Formule = B * Q');
+              debug('- Col O : Formule = SI(L9<>"Au cours"|(J9*N9)|"")');
+            } else {
+                debug('Error');
+              }
+
             break;
 
           case 'commande':
@@ -365,6 +376,24 @@ class ProductsController extends AppController
     }
 
     /**
+     * generateSommaire method
+     * Genere array des subcategories classé par store et subcategorie.Title
+     * @return array| Return le tableau du sommaire classé
+     */
+    public function generateSommaire()
+    {
+      $sommaire = array();
+          $subcategoriesList = TableRegistry::get('subcategories');
+          $subcategories = $subcategoriesList->find('all')
+                                             ->contain(['Categories'])
+                                             ->order(['Categories.store_id' => 'ASC', 'subcategories.title' => 'ASC']);;
+          foreach($subcategories as $key =>$subcategory) {
+            $sommaire[] = [$subcategory['title']];
+          }
+      return $sommaire;
+    }
+
+    /**
      * generateCatalogue method
      * A partir des articles dans la table products, générer le fichier excel Catalogue
      * @param string| $file = Path du fichier Excel
@@ -373,9 +402,18 @@ class ProductsController extends AppController
     public function generateCatalogue($file)
     {
       $catalogueHelpers= new CatalogueHelpers;
-
       $writer = WriterFactory::create(Type::XLSX); // for XLSX files
       $writer->openToFile($file);
+      
+      // Populate le sommaire
+      $sheet = $writer->getCurrentSheet();
+      $sheet->setName('Sommaire');
+      $writer->addRows($this->generateSommaire());
+
+      // Créé la nouvelle sheet pour le sommaire
+      $newSheet = $writer->addNewSheetAndMakeItCurrent();
+      $sheet = $writer->getCurrentSheet();
+      $sheet->setName('Catalogue');
 
       foreach ($catalogueHelpers->catalogueHeaders as $value) {
         //Ajoute la date du premier jour du mois pour la colonnes DLV indicative
@@ -403,13 +441,17 @@ class ProductsController extends AppController
                   $subcategories = $subcategoriesList->find('all')
                                                      ->where(['category_id =' => $category->id]);
                   foreach($subcategories as $subcategory) {
-                        $writer->addRowWithStyle(
-                            ['','','','','',$subcategory->title],
-                            $catalogueHelpers->getTitleStyle(16, '000000'));
+
                         // Ajout des articles
                         $products = $this->Products->find('all')
                                                    ->where(['Products.active =' => 1, 'Products.subcategory_id =' => $subcategory->id])
                                                    ->contain(['origins','categories','subcategories','brands']);
+                        // On verifie si il y a des produits dans la sousCategorie pour afficher le titre
+                        if($products->count()>0) {
+                          $writer->addRowWithStyle(
+                              ['','','','','',$subcategory->title], $catalogueHelpers->getTitleStyle(16, '000000'));
+                        }
+
                         $listQualiM = []; // Initialisation des articles avec le code qualification M
                         $listQualiP = []; // Initialisation des articles avec le code qualification P
                         $listQualiA = []; // Initialisation des articles avec le code qualification A
@@ -418,9 +460,11 @@ class ProductsController extends AppController
                           // Formatage de la date dlv
                           if(!empty($row->dlv)){  $row->dlv = date_format($row->dlv, 'd-m-Y'); }
                           // Formatage du Tarif
-                          if(empty($row->tarif)){  $row->tarif = 'Au cours'; }
+                          if(empty($row->prix)){  $row->prix = 'Au cours'; }
                           // Formatage colonne New
                           if($row->new == 1){  $row->new = 'New'; } else { $row->new = ''; }
+                          // Formatage colonne Maarque pour les vins
+                          if($row->Brands['title'] == 'VIN'){  $row->Brands['title'] = '-'; }
 
                           // Information exporter pour chaque produit
                           $ligne = [
@@ -447,6 +491,9 @@ class ProductsController extends AppController
 
                         }
 
+                        // Tri par marque pour les MDD
+                        $listQualiM = $catalogueHelpers->sortMDDMarques($listQualiM);
+                        // Orginiser les tableaux 1er prix, MDD, Marques nationale
                         $listeProducts = array_merge($catalogueHelpers->getProductsToDisplay($listQualiM, 'M'),
                                                      $catalogueHelpers->getProductsToDisplay($listQualiA));
                         $listeProducts = array_merge($catalogueHelpers->getProductsToDisplay($listQualiP),$listeProducts);
@@ -456,9 +503,10 @@ class ProductsController extends AppController
                           //Get le style en fonction de la marque
                           $style = $catalogueHelpers->renderStyle($value['Marque']);
 
-                          if(empty($value['Marque'])){ $value['Marque'] = 'Autres marques';} // Si la marque n'existe pas on cree autres marques
-                          $writer->addRowWithStyle(['','','','','',$value['Marque']], $style['Marque']); // On créé la ligne Marque
-
+                          //if(empty($value['Marque'])){ $value['Marque'] = 'Autres marques';} // Si la marque n'existe pas on cree autres marques
+                          if($value['Marque'] !== 'VIN'){ // On créé la ligne Marque uf pour la marque VIN
+                            $writer->addRowWithStyle(['','','','','',$value['Marque']], $style['Marque']);
+                          }
                           //On boucle sur les ligne produit associé à la marque
                           foreach ($value['Produits'] as $key => $article) {
                             $writer->addRowWithStyle($article, $style['Product']);
@@ -477,7 +525,7 @@ class ProductsController extends AppController
 
     /**
      * updateSansMarques method
-     * Mettre a jour via une table de correspondance CSV les articles sans marques ['Code produit', 'Libelle de la marque']
+     * Mettre a jour via une table de correspondance CSV les articles sans marques ['Code produit', 'Libelle']
      * @return true| Return true quand l'update est terminé
      */
     public function updateSansMarques()
@@ -492,18 +540,27 @@ class ProductsController extends AppController
       foreach ($reader->getSheetIterator() as $sheet) {
 
         foreach ($sheet->getRowIterator() as $key => $productRow) {
+          $productRow[1] = utf8_encode ($productRow[1]);
           $brands = TableRegistry::get('brands');
           $brands = $brands->find('all')
-                            ->where(['title =' => $productRow[1]])
+                            ->where(['title =' => 'pipicaca'])
                             ->first();
 
-          $product =  $this->Products->find('all')
-                        ->where(['code =' => $productRow[0]]);
+          if(!is_null($brands)){
 
-          $product->update()
-                  ->set(['brand_id' => $brands->id])
-                  ->where(['code' => $productRow[0]])
-                  ->execute();
+
+            $product =  $this->Products->find('all')
+                          ->where(['code =' => $productRow[0]]);
+
+            if($product->update()->set(['brand_id' => $brands->id])->where(['code' => $productRow[0]])->execute()) {
+            } else {
+              Debug('Impossible de mettre à jour cet article:'.$productRow[0]);
+            }
+
+          } else {
+            Debug('La marque '.$productRow[1].' N existe pas');
+          }
+
 
         }
       }

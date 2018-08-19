@@ -168,7 +168,7 @@ class ProductsController extends AppController
     public function updateBase()
     {
         $time_start = microtime(true);
-        $csvFilePath = "files/test8.csv";
+        $csvFilePath = "files/xxx.csv";
         $csvNbrRows = count(file($csvFilePath));
         $reader = ReaderFactory::create(Type::CSV); // for CSV files
         $reader->setFieldDelimiter('|');
@@ -348,7 +348,7 @@ class ProductsController extends AppController
             // code...
             $finalFile = 'files/catalogue-'.time().'.xlsx';
             rename($exportFile, $finalFile);
-            $this->generateSommaire($finalFile);
+            //$this->generateSommaire($finalFile);
             if($this->generateCatalogue($finalFile)) {
               debug('Generate catalogue');
               debug('- Col A : Convertir en Nombre');
@@ -363,7 +363,11 @@ class ProductsController extends AppController
             break;
 
           case 'commande':
-
+            // code...
+            $finalFile = 'files/bonCommande-'.time().'.xlsx';
+            rename($exportFile, $finalFile);
+            //$this->generateSommaire($finalFile);
+            $this->generateBonCommande($finalFile);
             break;
 
           default:
@@ -399,12 +403,43 @@ class ProductsController extends AppController
      * @param string| $file = Path du fichier Excel
      * @return true| Return true quand le fichier est généré
      */
+    public function generateBonCommande($file)
+    {
+      $writer = WriterFactory::create(Type::XLSX); // for XLSX files
+      $writer->openToFile($file);
+      $products = $this->Products->find('all')->contain(['Origins']);
+      //debug($products);
+
+      foreach ($products as $row) {
+        //debug();
+        $origine = $row->origin['title'];
+        //die;
+        // Formatage de la date dlv
+        if(!empty($row->dlv)){  $row->dlv = date_format($row->dlv, 'd-m-Y'); }
+        $ligne = [
+          $row->code , $row->remplacement_product, $row->title, $row->pcb, $row->prix,$row->uv,$row->poids, $row->volume,
+          $row->dlv, $row->duree_vie, $row->gencod,(string)$row->douanier,'',$row->dangereux,$origine];
+        //debug($ligne);
+        //die;
+          $writer->addRow($ligne);
+      }
+      $writer->close();
+
+      return true;
+    }
+
+    /**
+     * generateCatalogue method
+     * A partir des articles dans la table products, générer le fichier excel Catalogue
+     * @param string| $file = Path du fichier Excel
+     * @return true| Return true quand le fichier est généré
+     */
     public function generateCatalogue($file)
     {
       $catalogueHelpers= new CatalogueHelpers;
       $writer = WriterFactory::create(Type::XLSX); // for XLSX files
       $writer->openToFile($file);
-      
+
       // Populate le sommaire
       $sheet = $writer->getCurrentSheet();
       $sheet->setName('Sommaire');
@@ -431,7 +466,7 @@ class ProductsController extends AppController
       $stores = $storesList->find('all');
       foreach($stores as $store) {
             $writer->addRowWithStyle(
-                  ['','','','','',$store->title],
+                  ['','','','','','',$store->title],
                   $catalogueHelpers->getTitleStyle(22, 'FFC000'));
             // Ajout des catégories
             $categories = $categoriesList->find('all')
@@ -449,7 +484,7 @@ class ProductsController extends AppController
                         // On verifie si il y a des produits dans la sousCategorie pour afficher le titre
                         if($products->count()>0) {
                           $writer->addRowWithStyle(
-                              ['','','','','',$subcategory->title], $catalogueHelpers->getTitleStyle(16, '000000'));
+                              ['','','','','','',$subcategory->title], $catalogueHelpers->getTitleStyle(16, '000000'));
                         }
 
                         $listQualiM = []; // Initialisation des articles avec le code qualification M
@@ -468,7 +503,7 @@ class ProductsController extends AppController
 
                           // Information exporter pour chaque produit
                           $ligne = [
-                            $row->code , '', $row->new, $row->duree_vie, $row->dlv,
+                            $row->code , '', '', $row->new, $row->duree_vie, $row->dlv,
                             $row->title, $row->Brands['title'], $row->pieceartk,
                             $row->pcb, $row->prix, $row->uv, '', '', '', '',
                             $row->poids, $row->volume, (int)$row->couche_palette,
@@ -505,7 +540,7 @@ class ProductsController extends AppController
 
                           //if(empty($value['Marque'])){ $value['Marque'] = 'Autres marques';} // Si la marque n'existe pas on cree autres marques
                           if($value['Marque'] !== 'VIN'){ // On créé la ligne Marque uf pour la marque VIN
-                            $writer->addRowWithStyle(['','','','','',$value['Marque']], $style['Marque']);
+                            $writer->addRowWithStyle(['','','','','','',$value['Marque']], $style['Marque']);
                           }
                           //On boucle sur les ligne produit associé à la marque
                           foreach ($value['Produits'] as $key => $article) {

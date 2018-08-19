@@ -8,9 +8,9 @@ class CatalogueHelpers
 {
 
     public $catalogueHeaders = [
-      ['Code',	  'Cde',	'New',	'Durée de',	'DLV',	'Désignation des marchandises',	'Marque',	'Piéces',	'PCB',	'Tarif',	'UV',	'Unités',	'Poids',	'Volume',	'Montant',	'Poids',	'Volume',	'Colis par',	'Colis par', 'Code', 'Q', 'GENCOD'],
-      ['Article',	'Colis','', 'vie jours',	'Indicative','', '', 'Article', 'Colis','', '', '', 'Cde', 'Cde', 'Cde', 'Colis',	'Colis', 'couche',	'Palette',	'Douanier', '', ''],
-      ['', '', '', 'Indicative',	'au #1erduMois#', '', '',	'Kilo']
+      ['Code',	  'Cde',	'Photo',	'New',	'Durée de',	'DLV',	'Désignation des marchandises',	'Marque',	'Piéces',	'PCB',	'Tarif',	'UV',	'Unités',	'Poids',	'Volume',	'Montant',	'Poids',	'Volume',	'Colis par',	'Colis par', 'Code', 'Q', 'GENCOD'],
+      ['Article',	'Colis','', '', 'vie jours',	'Indicative','', '', 'Article', 'Colis','', '', '', 'Cde', 'Cde', 'Cde', 'Colis',	'Colis', 'couche',	'Palette',	'Douanier', '', ''],
+      ['', '', '', '', 'Indicative',	'au #1erduMois#', '', '',	'Kilo']
     ];
 
     /**
@@ -111,11 +111,11 @@ class CatalogueHelpers
           $listeProduct[0]['Produits'][$key] = $value; //On ajoute les produits à la marque MDD quelque soit la marque du produit
         } else {
           // Rechercher dans le tableau si la marque existe deja
-          $key = $this->searchForMarque($value[6], $listeProduct);
+          $key = $this->searchForMarque($value[7], $listeProduct);
 
           //Si elle n'existe pas on l'ajoute et on ajoute l'article l'article avec cette marque
           if(is_null($key)){
-              $listeProduct[] = ['Marque' =>$value[6]]; // On ajoute la marque
+              $listeProduct[] = ['Marque' =>$value[7]]; // On ajoute la marque
               end($listeProduct); //Set the internal pointer to the end.
               $key = key($listeProduct); //Retrieve the key of the current element.
               $listeProduct[$key]['Produits'] = [$value]; // On ajoute le premier produit associé à cette marque

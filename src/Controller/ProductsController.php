@@ -387,13 +387,19 @@ class ProductsController extends AppController
     public function generateSommaire()
     {
       $sommaire = array();
-          $subcategoriesList = TableRegistry::get('subcategories');
-          $subcategories = $subcategoriesList->find('all')
-                                             ->contain(['Categories'])
-                                             ->order(['Categories.store_id' => 'ASC', 'subcategories.title' => 'ASC']);;
-          foreach($subcategories as $key =>$subcategory) {
-            $sommaire[] = [$subcategory['title']];
-          }
+      $subcategoriesList = TableRegistry::get('subcategories');
+      $subcategories = $subcategoriesList->find('all')
+                                         ->contain(['Categories'])
+                                         ->order(['Categories.store_id' => 'ASC', 'subcategories.title' => 'ASC']);
+      $firstLetter = '';
+      foreach($subcategories as $key =>$subcategory) {
+        //Ajout de la premiere lettre A, B, C, ...
+        if($firstLetter != substr($subcategory['title'], 0, 1)){
+          $firstLetter = substr($subcategory['title'], 0, 1);
+          $sommaire[] = [substr($subcategory['title'], 0, 1)];
+        }
+        $sommaire[] = [$subcategory['title']];
+      }
       return $sommaire;
     }
 
@@ -467,7 +473,7 @@ class ProductsController extends AppController
       foreach($stores as $store) {
             $writer->addRowWithStyle(
                   ['','','','','','',$store->title],
-                  $catalogueHelpers->getTitleStyle(22, 'FFC000'));
+                  $catalogueHelpers->getTitleStyle(36, 'FFC000'));
             // Ajout des catégories
             $categories = $categoriesList->find('all')
                                          ->where(['store_id =' => $store->id]);
@@ -484,7 +490,7 @@ class ProductsController extends AppController
                         // On verifie si il y a des produits dans la sousCategorie pour afficher le titre
                         if($products->count()>0) {
                           $writer->addRowWithStyle(
-                              ['','','','','','',$subcategory->title], $catalogueHelpers->getTitleStyle(16, '000000'));
+                              ['','','','','','',$subcategory->title], $catalogueHelpers->getTitleStyle(22, '00B050'));
                         }
 
                         $listQualiM = []; // Initialisation des articles avec le code qualification M

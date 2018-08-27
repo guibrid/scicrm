@@ -10,6 +10,13 @@ use Cake\Filesystem\File;
 class FieldCheck
 {
     /**
+     * Liste des libelles SANS MARQUES
+     * Utiliser lors de la verification de la catégorie
+     */
+    public $sansmarqueList = ['', '.', '..', '...', 'SANS', 'SANS MARQUE',
+                              'SS MARQUE.', 'DIVERS', 'NC', 'GENERIQUE'];
+
+    /**
      * Liste des ancien code Categories avec leur nouvelle correspondance
      * Utiliser lors de la verification de la catégorie
      */
@@ -316,9 +323,9 @@ class FieldCheck
     //Recherche de brands
     public function searchBrands($field, $value, $product_code, $qualification)
     {
-        $sansmarqueList = ['', '.', '..', '...', 'SANS', 'SANS MARQUE', 'SS MARQUE.', 'DIVERS', 'NC', 'GENERIQUE'];
+        //$sansmarqueList = ['', '.', '..', '...', 'SANS', 'SANS MARQUE', 'SS MARQUE.', 'DIVERS', 'NC', 'GENERIQUE'];
         // Si la marque est de type 'SANS MARQUE' et que Qualification = P
-        if(array_search($value, $sansmarqueList)){
+        if(array_search($value, $this->sansmarqueList)){
           if($qualification === 'P') { // On renome la Marque en '1er Prix'
             $value = '1er Prix';
           }
@@ -342,6 +349,47 @@ class FieldCheck
         $warning = new Warnings;
         $warning->insert('La marque n\'existe pas dans la table brands ou shortbrands', $product_code, $field, $value);
         return null;
+    }
+
+
+    //Recherche de brands
+    public function updateBrands($field, $value, $valueSavedId, $product_code, $qualification)
+    {
+      //TODO Refactoriser avec searchBrand Method en ajouter en paramettre  $valueSavedId en dernier de la fonction
+      // avec un valeur à null par default pour savoir quand on a affaire à un update
+      
+
+      // si valeur est egale à sans marques
+      if(array_search($value, $this->sansmarqueList)){
+        return $valueSavedId;
+      }
+
+      // Sinon on recherche l'id de value et on la compare avec $valueSavedId.
+      //Verifier dans la table brands que la valeur existe
+      $brandSearch = TableRegistry::get('brands');
+      $brand = $brandSearch->find()->where(['title =' => $value])->first();
+      if (!is_null($brand)) {  // Si non trouve une correspondance dans la table brands
+        // Si l'id de la marque enregister correspond à l'id de la nouvelle
+        if($brand->id == $valueSavedId) {
+          return $brand->id;
+        }
+      };
+
+      //Sinon on verifie dans la table shortbrands que la valeur existe et qu'elle a une brand_id associée
+      $shortbrandSearch = TableRegistry::get('shortbrands');
+      $shortbrand = $shortbrandSearch->find()->where(['title =' => $value, 'brand_id IS NOT' => null])->first();
+      if (!is_null($shortbrand)) {  // Si non trouve une correspondance dans la table $shortorigin on renvoie origin_id associé
+        // Si l'id de la marque enregister correspond à l'id de la nouvelle
+        if($shortbrand->brand_id == $valueSavedId) {
+          return $shortbrand->brand_id;
+        }
+      };
+      // Si différent warning
+      //Sinon on créée une alerte Origin inconu et on return null pour la valeur
+      $warning = new Warnings;
+      $warning->insert('La marque ne correspond pas à la marque enregistrer dans la base de donnée', $product_code, $field, $value);
+      return $valueSavedId;
+      die;
     }
 
     /**

@@ -293,8 +293,15 @@ public function validate($data) {
         //Renomer la Marques en fonction du cas particulier des subcategories et Qualification lier au Vin
         $listeSubcategoriVin = $fieldCheck->subcategoriesVin; //Call le Array des subcategory lier au vin
         $data['brand_id'] = $fieldCheck->checkVins($key, $data['brand_id'], $data['code'], $data['subcategory_id'], $data['qualification'], $listeSubcategoriVin);
-        // Recherche de l'id dans les tables brands et shortbrands
-        $data['brand_id'] = $fieldCheck->searchBrands($key, $data['brand_id'] , $data['code'], $data['qualification']);
+
+        if($isInsert){ //Si c'est un insert
+          // Recherche de l'id dans les tables brands et shortbrands
+          $data['brand_id'] = $fieldCheck->searchBrands($key, $data['brand_id'] , $data['code'], $data['qualification']);
+        } else { //Si c'est un update
+          $fieldCheck->updateBrands($key, $data['brand_id'], $productSaved['brand_id'], $data['code'], $data['qualification']);
+        }
+
+
         //TODO Add the // INSERT / UPDATE check
         break;
   }

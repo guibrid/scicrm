@@ -337,158 +337,127 @@ class ProductsController extends AppController
      */
     public function export($type = null)
     {
+
+        // Check si le type est valide
+        $validType = ['catalogue','boncommande'];
+        if(!in_array($type, $validType)) {
+          debug('Wrong type: catalogue ou boncommande');
+          die;
+        }
+
         $emptyXls = 'files/empty.xlsx';
         $exportFile = 'files/'.time().'.xlsx';
         if (!copy($emptyXls, $exportFile)) {
           echo "failed to copy";
+          return false;
         }
 
-        switch ($type) {
-          case 'catalogue':
-            // code...
-            $finalFile = 'files/catalogue-'.time().'.xlsx';
-            rename($exportFile, $finalFile);
-            //$this->generateSommaire($finalFile);
-            if($this->generateCatalogue($finalFile)) {
-              debug('Generate catalogue');
-              debug('- Col A : Convertir en Nombre');
-              debug('- Col L : Formule = B * I');
-              debug('- Col M : Formule = B * P');
-              debug('- Col N : Formule = B * Q');
-              debug('- Col O : Formule = SI(L9<>"Au cours"|(J9*N9)|"")');
-            } else {
-                debug('Error');
-              }
-
-            break;
-
-          case 'commande':
-            // code...
-            $finalFile = 'files/bonCommande-'.time().'.xlsx';
-            rename($exportFile, $finalFile);
-            //$this->generateSommaire($finalFile);
-            $this->generateBonCommande($finalFile);
-            break;
-
-          default:
-
-            break;
+        $finalFile = 'files/'.$type.'-'.time().'.xlsx';
+        rename($exportFile, $finalFile);
+        //$this->generateSommaire($finalFile);
+        if($this->generateExcel($finalFile, $type)) {
+          debug('Generate '.$type);
+        } else {
+            debug('Error');
         }
         die;
 
 
     }
 
+
+
+
+
     /**
-     * generateSommaire method
-     * Genere array des subcategories classé par store et subcategorie.Title
-     * @return array| Return le tableau du sommaire classé
+     * generateExcel method
+     * A partir des articles dans la table products, générer le fichier excel Catalogue et bon de commande
+     * @param string| $file = Path du fichier Excel
+     * @param string| $type = catalogue ou boncommande
+     * @return true| Return true quand le fichier est généré
      */
-    public function generateSommaire()
+    public function generateExcel($file, $type)
     {
-      $sommaire = array();
+      // Register les tables suivantes
       $subcategoriesList = TableRegistry::get('subcategories');
-      $subcategories = $subcategoriesList->find('all')
-                                         ->contain(['Categories'])
-                                         ->order(['Categories.store_id' => 'ASC', 'subcategories.title' => 'ASC']);
-      $firstLetter = '';
-      foreach($subcategories as $key =>$subcategory) {
-        //Ajout de la premiere lettre A, B, C, ...
-        if($firstLetter != substr($subcategory['title'], 0, 1)){
-          $firstLetter = substr($subcategory['title'], 0, 1);
-          $sommaire[] = [substr($subcategory['title'], 0, 1)];
-        }
-        $sommaire[] = [$subcategory['title']];
-      }
-      return $sommaire;
-    }
+      $categoriesList = TableRegistry::get('categories');
+      $storesList = TableRegistry::get('stores');
+      $originsList = TableRegistry::get('origins');
 
-    /**
-     * generateCatalogue method
-     * A partir des articles dans la table products, générer le fichier excel Catalogue
-     * @param string| $file = Path du fichier Excel
-     * @return true| Return true quand le fichier est généré
-     */
-    public function generateBonCommande($file)
-    {
-      $writer = WriterFactory::create(Type::XLSX); // for XLSX files
-      $writer->openToFile($file);
-      $products = $this->Products->find('all')->contain(['Origins']);
-      //debug($products);
-
-      foreach ($products as $row) {
-        //debug();
-        $origine = $row->origin['title'];
-        //die;
-        // Formatage de la date dlv
-        if(!empty($row->dlv)){  $row->dlv = date_format($row->dlv, 'd-m-Y'); }
-        $ligne = [
-          $row->code , $row->remplacement_product, $row->title, $row->pcb, $row->prix,$row->uv,$row->poids, $row->volume,
-          $row->dlv, $row->duree_vie, $row->gencod,(string)$row->douanier,'',$row->dangereux,$origine];
-        //debug($ligne);
-        //die;
-          $writer->addRow($ligne);
-      }
-      $writer->close();
-
-      return true;
-    }
-
-    /**
-     * generateCatalogue method
-     * A partir des articles dans la table products, générer le fichier excel Catalogue
-     * @param string| $file = Path du fichier Excel
-     * @return true| Return true quand le fichier est généré
-     */
-    public function generateCatalogue($file)
-    {
+      // Initialisation de l'ecriture sur le fichier excel
       $catalogueHelpers= new CatalogueHelpers;
       $writer = WriterFactory::create(Type::XLSX); // for XLSX files
       $writer->openToFile($file);
 
-      // Populate le sommaire
-      $sheet = $writer->getCurrentSheet();
-      $sheet->setName('Sommaire');
-      $writer->addRows($this->generateSommaire());
+      //Si c'est un catalogue on genere le sommaire
+      if($type == 'catalogue') {
+        // Créé la feuille Page de garde
+        $sheet = $writer->getCurrentSheet();
+        $sheet->setName('Garde');
+        $writer->addRows($catalogueHelpers->generateGarde());
 
-      // Créé la nouvelle sheet pour le sommaire
+        // Créé la feuille Sommaire
+        $newSheet = $writer->addNewSheetAndMakeItCurrent();
+        $sheet = $writer->getCurrentSheet();
+        $sheet->setName('Sommaire');
+        $writer->addRows($catalogueHelpers->generateSommaire());
+      }
+
+      //Si c'est un catalogue on genere le sommaire
+      if($type == 'boncommande') {
+        // Populate le sommaire
+        $sheet = $writer->getCurrentSheet();
+        $sheet->setName('Commande');
+      }
+
+      // Créé la nouvelle sheet le catalogue ou le bon de commande
       $newSheet = $writer->addNewSheetAndMakeItCurrent();
       $sheet = $writer->getCurrentSheet();
-      $sheet->setName('Catalogue');
+      $sheet->setName(ucfirst($type));
 
-      foreach ($catalogueHelpers->catalogueHeaders as $value) {
-        //Ajoute la date du premier jour du mois pour la colonnes DLV indicative
+      // Définition des entetes
+      if($type == 'catalogue') {
+        $header = $catalogueHelpers->catalogueHeaders;
+        $i_colonneTemoin = 5; //la valeur de debut de la colonne témoin
+      } else if ($type == 'boncommande') {
+        $header = $catalogueHelpers->boncommandeHeaders;
+      }
+      //Creation des ligne d'entetes
+      foreach ($header as $value) {
+        //Ajoute la date du premier jour du mois pour
+        //la colonnes DLV indicative (Catalogue uniquement)
         foreach ($value as &$str) {
           $str = str_replace('au #1erduMois#', 'au '.date("01/m/Y"), $str);
         }
         $writer->addRow($value);
       }
 
-      $subcategoriesList = TableRegistry::get('subcategories');
-      $categoriesList = TableRegistry::get('categories');
-      $storesList = TableRegistry::get('stores');
 
-      // Ajouter la boucle des stores
+
+
+      //Boucle des stores
       $stores = $storesList->find('all');
       foreach($stores as $store) {
-            $writer->addRowWithStyle(
-                  ['','','','','','',$store->title],
-                  $catalogueHelpers->getTitleStyle(36, 'FFC000'));
-            // Ajout des catégories
-            $categories = $categoriesList->find('all')
-                                         ->where(['store_id =' => $store->id]);
+            // CATALOGUE : on insert la ligne avec le nom du store
+            if($type == 'catalogue') {
+              $writer->addRowWithStyle( ['','','','','','',$store->title],
+                                        $catalogueHelpers->getTitleStyle(36, 'FFC000'));
+            }
+
+            //Boucle des catégories
+            $categories = $categoriesList->find('all')->where(['store_id =' => $store->id]);
             foreach($categories as $category) {
-                  // Ajout des sous catégories
-                  $subcategories = $subcategoriesList->find('all')
-                                                     ->where(['category_id =' => $category->id]);
+
+                  //Boucle des sous catégories
+                  $subcategories = $subcategoriesList->find('all')->where(['category_id =' => $category->id]);
                   foreach($subcategories as $subcategory) {
 
-                        // Ajout des articles
+                        //Boucle des articles
                         $products = $this->Products->find('all')
                                                    ->where(['Products.active =' => 1, 'Products.subcategory_id =' => $subcategory->id])
                                                    ->contain(['origins','categories','subcategories','brands']);
-                        // On verifie si il y a des produits dans la sousCategorie pour afficher le titre
-                        if($products->count()>0) {
+                        // On verifie si il y a des produits dans la sousCategorie  et que le type est catalogue
+                        if($products->count()>0 && $type == 'catalogue') {
                           $writer->addRowWithStyle(
                               ['','','','','','',$subcategory->title], $catalogueHelpers->getTitleStyle(22, '00B050'));
                         }
@@ -508,13 +477,21 @@ class ProductsController extends AppController
                           if($row->Brands['title'] == 'VIN'){  $row->Brands['title'] = '-'; }
 
                           // Information exporter pour chaque produit
-                          $ligne = [
-                            $row->code , '', '', $row->new, $row->duree_vie, $row->dlv,
-                            $row->title, $row->Brands['title'], $row->pieceartk,
-                            $row->pcb, $row->prix, $row->uv, '', '', '', '',
-                            $row->poids, $row->volume, (int)$row->couche_palette,
-                            (int)$row->colis_palette, (string)$row->douanier,
-                            $row->qualification, $row->gencod];
+                          if ($type == 'catalogue') {
+                            $ligne = [
+                              $row->code , '', '', $row->new, $row->duree_vie, $row->dlv,
+                              $row->title, $row->Brands['title'], $row->pieceartk,
+                              $row->pcb, $row->prix, $row->uv, '', '', '', '',
+                              $row->poids, $row->volume, (int)$row->couche_palette,
+                              (int)$row->colis_palette, (string)$row->douanier,
+                              $row->qualification, $row->gencod, ''];
+                          } else if ($type == 'boncommande') {
+                            $ligne = [
+                              $row->code , $row->remplacement_product, $row->title, $row->pcb,
+                              $row->prix, $row->uv, $row->poids, $row->volume, $row->dlv,
+                              $row->duree_vie, $row->gencod, (string)$row->douanier, '',
+                              $row->dangereux, $row->Origins['title']];
+                          }
 
                             switch ($row->qualification) {
                               case 'P':
@@ -541,12 +518,14 @@ class ProductsController extends AppController
 
                         //foreach qui va ajouter les lignes marques et produits au fichier Excel
                         foreach ($listeProducts as $key => $value) {
-                          //Get le style en fonction de la marque
-                          $style = $catalogueHelpers->renderStyle($value['Marque']);
 
-                          //if(empty($value['Marque'])){ $value['Marque'] = 'Autres marques';} // Si la marque n'existe pas on cree autres marques
-                          if($value['Marque'] !== 'VIN'){ // On créé la ligne Marque uf pour la marque VIN
-                            $writer->addRowWithStyle(['','','','','','',$value['Marque']], $style['Marque']);
+                        //Get le style en fonction de la marque
+                        $style = $catalogueHelpers->renderStyle($value['Marque']);
+                        if ($type == 'catalogue') {
+                            //if(empty($value['Marque'])){ $value['Marque'] = 'Autres marques';} // Si la marque n'existe pas on cree autres marques
+                            if($value['Marque'] !== 'VIN'){ // On créé la ligne Marque uf pour la marque VIN
+                              $writer->addRowWithStyle(['','','','','','',$value['Marque']], $style['Marque']);
+                            }
                           }
                           //On boucle sur les ligne produit associé à la marque
                           foreach ($value['Produits'] as $key => $article) {
@@ -559,6 +538,27 @@ class ProductsController extends AppController
             } //Foreach Categorie end
 
       } //Foreach Store end
+
+      if ($type == 'boncommande') {
+
+        $products = $this->Products->find('all')->contain(['Origins']);
+        //debug($products);
+
+        foreach ($products as $row) {
+          //debug();
+          $origine = $row->origin['title'];
+          //die;
+          // Formatage de la date dlv
+          if(!empty($row->dlv)){  $row->dlv = date_format($row->dlv, 'd-m-Y'); }
+          $ligne = [
+            $row->code , $row->remplacement_product, $row->title, $row->pcb, $row->prix,$row->uv,$row->poids, $row->volume,
+            $row->dlv, $row->duree_vie, $row->gencod,(string)$row->douanier,'',$row->dangereux,$origine];
+          //debug($ligne);
+          //die;
+            $writer->addRow($ligne);
+        }
+
+      }
       $writer->close();
 
       return true;

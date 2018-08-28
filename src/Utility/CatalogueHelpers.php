@@ -2,16 +2,29 @@
 namespace App\Utility;
 use Box\Spout\Writer\Style\StyleBuilder;
 use Box\Spout\Writer\Style\Color;
+use Cake\ORM\TableRegistry;
 
 
 class CatalogueHelpers
 {
-
+    /**
+     * Entete de colonne du catalogue
+     */
     public $catalogueHeaders = [
-      ['Code',	  'Cde',	'Photo',	'New',	'Durée de',	'DLV',	'Désignation des marchandises',	'Marque',	'Piéces',	'PCB',	'Tarif',	'UV',	'Unités',	'Poids',	'Volume',	'Montant',	'Poids',	'Volume',	'Colis par',	'Colis par', 'Code', 'Q', 'GENCOD'],
-      ['Article',	'Colis','', '', 'vie jours',	'Indicative','', '', 'Article', 'Colis','', '', '', 'Cde', 'Cde', 'Cde', 'Colis',	'Colis', 'couche',	'Palette',	'Douanier', '', ''],
-      ['', '', '', '', 'Indicative',	'au #1erduMois#', '', '',	'Kilo']
+      ['Code',	  'Cde',	 'Photo',	'New',	'Durée de',	  'DLV',	          'Désignation des marchandises',	'Marque',	'Piéces',	 'PCB',	  'Tarif',	'UV',	'Unités',	'Poids',	'Volume',	'Montant',	'Poids',	'Volume',	'Colis par',	'Colis par', 'Code',     'Q', 'GENCOD', '1'],
+      ['Article',	'Colis', '',       '',    'vie jours',  'Indicative',     '',                             '',       'Article', 'Colis', '',       '',   '',       'Cde',    'Cde',    'Cde',      'Colis',	'Colis',  'couche',	    'Palette',	 'Douanier', '',  '',       '2'],
+      ['',        '',      '',       '',    'Indicative',	'au #1erduMois#', '',                             '',	      'Kilo',    ''     , '',       '',   '',       '',       '',       '',         '',       '',       '',           '',          '',         '',  '',       '3']
     ];
+
+    /**
+     * Entete de colonne du bon de commande
+     */
+    public $boncommandeHeaders = [
+      ['Code',	  'Article de',	  'Désignation des marchandises',	'PCB',	 'Tarif',	'UV',	'Poids', 'Volume',	'DLV',	      'Durée de vie',	'Gencod',	'Code',	    '1', 'Classe',	  'Pays'],
+      ['Article', 'Remplacement',	'',                             'Colis', '',      '',   'Colis', 'Colis',   'Indicative', 'Indicative',   '',       'Douanier', '2', 'Dangereux',	"d'origine"],
+      ['',        '',	            '',                             '',      '',      '',   '',      '',        '',           '',             '',       '',         '3', '',	        '']
+    ];
+
 
     /**
      * getTitleStyle method
@@ -146,6 +159,67 @@ class CatalogueHelpers
       // Trié le tableau par la liste des marques créé ci-dessus
       array_multisort($marques, $array);
       return $array;
+    }
+
+    /**
+     * generateGarde method
+     * genere la page de garde du catalogue
+     * @return array| Return le tableau des lignes de la page de garde
+     */
+    public function generateGarde()
+    {
+      $current_month = date("F Y");
+      $data = [
+        [''],
+        [''],
+        ['EURL Société de Commerce International'],
+        ['Fare Ute - Immeuble Le Caill'],
+        ['BP 1504 - 98713 Papeete'],
+        ['Polynésie Française'],
+        ['R.C.S.PAPEETE TPI 15 128 B'],
+        ['SARL au capital de 200 000 XPF'],
+        ['Polynésie Française'],
+        ['Mail : contact@sc-international.fr'],
+        ['Téléphone : 689 89 56 24 80'],
+        ['France'],
+        ['Téléphone Elisabeth : 09 52 15 95 25 / 06 29 75 73 30'],
+        ['Mail Elisabeth : elisabeth@sc-international.fr'],
+        [''],
+        ['CATALOGUE'],
+        ['GMS & COLLECTIVITES'],
+        [$current_month],
+        [''],
+        ['cliquez, ci-dessous, sur le sommaire souhaité, puis sur la famille de produits'],
+        ['EPICERIE, LIQUIDES, DPH, BAZAR'],
+        ['SURGELES'],
+        ['FRAIS, ULTRA FRAIS']
+      ];
+
+      return $data;
+    }
+
+    /**
+     * generateSommaire method
+     * Genere array des subcategories classé par store et subcategorie.Title
+     * @return array| Return le tableau du sommaire classé
+     */
+    public function generateSommaire()
+    {
+      $sommaire = array();
+      $subcategoriesList = TableRegistry::get('subcategories');
+      $subcategories = $subcategoriesList->find('all')
+                                         ->contain(['Categories'])
+                                         ->order(['Categories.store_id' => 'ASC', 'subcategories.title' => 'ASC']);
+      $firstLetter = '';
+      foreach($subcategories as $key =>$subcategory) {
+        //Ajout de la premiere lettre A, B, C, ...
+        if($firstLetter != substr($subcategory['title'], 0, 1)){
+          $firstLetter = substr($subcategory['title'], 0, 1);
+          $sommaire[] = [substr($subcategory['title'], 0, 1)];
+        }
+        $sommaire[] = [$subcategory['title']];
+      }
+      return $sommaire;
     }
 
 

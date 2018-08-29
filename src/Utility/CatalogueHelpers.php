@@ -25,6 +25,12 @@ class CatalogueHelpers
       ['',        '',	            '',                             '',      '',      '',   '',      '',        '',           '',             '',       '',         '3', '',	        '']
     ];
 
+    /**
+     * Liste des subcategory id des PRODUITS BIOLOGIQUES ET DIÉTÉTIQUES
+     * Utiliser lors de la generation du catalogue
+     */
+    public $subcatBio_ids = ['210','211','212','213','214','215','216','217','218','219'];
+
 
     /**
      * getTitleStyle method
@@ -221,6 +227,111 @@ class CatalogueHelpers
       }
       return $sommaire;
     }
+
+    /**
+     * formatDLV method
+     * Formatage du champs DLV d-m-Y
+     * @return string| Return la date formaté
+     */
+     public function formatDLV($date)
+     {
+       if(!empty($date)) {
+         $date = date_format($date, 'd-m-Y');
+       }
+       return $date;
+     }
+
+     /**
+      * formatPrix method
+      * Formatage du champs prix
+      * @return string| Return le prix formaté
+      */
+      public function formatPrix($prix)
+      {
+        if(empty($prix)) {
+          $prix = 'Au cours';
+        }
+        return $prix;
+      }
+
+      /**
+       * formatNew method
+       * Formatage du champsnew
+       * @return string| Return la valeur formatée
+       */
+       public function formatNew($value)
+       {
+         if($value){
+           $value = 'New';
+         } else {
+           $value = '';
+         }
+         return $value;
+       }
+
+       /**
+        * formatBrand method
+        * Formatage du marque
+        * @return string| Return la marque formatée
+        */
+        public function formatBrand($brand)
+        {
+          if($brand == 'VIN'){
+            $brand = '-';
+          }
+          return $brand;
+        }
+
+        /**
+         * orderProduct method
+         * ordonner la listes (array) des produits par type : 1er prix, MDD, Marques nationale
+         * @param array| $listQualificationP = tableau des produits donc la qualification est P (1er prix)
+         * @param array| $listQualificationM = tableau des produits donc la qualification est M (MDD)
+         * @param array| $listQualificationA = tableau des produits donc la qualification est A (Marques nationales)
+         * @return string| Return la marque formatée
+         */
+         public function orderProduct($listQualificationP, $listQualificationM, $listQualificationA)
+         {
+           // On fusionne les tableaux de produits en fonction de l'order souhaite : 1er prix, MDD, Marques nationale
+           $listProductOrdered = array_merge($this->getProductsToDisplay($listQualificationM, 'M'),
+                                        $this->getProductsToDisplay($listQualificationA));
+           $listProductOrdered = array_merge($this->getProductsToDisplay($listQualificationP), $listProductOrdered);
+
+           return $listProductOrdered;
+         }
+
+         /**
+          * generateRow method
+          * genere la ligne produit pour le catalogue et le bon de commande
+          * @param object| $productDetails = tableau contenant tous les infos du produit
+          * @param string| $type = Type de génération Catalogue ou Bon de commande
+          * @return array| Return les information a ajouter dans le fichier excel
+          */
+          public function generateRow($productDetails, $type)
+          {
+            // Information exporter pour chaque produit
+            if ($type == 'catalogue') {
+              $productRow = [
+                $productDetails->code , '', '', $this->formatNew($productDetails->new),
+                $productDetails->duree_vie, $this->formatDLV($productDetails->dlv),
+                $productDetails->title, $this->formatBrand($productDetails->Brands['title']),
+                $productDetails->pieceartk, $productDetails->pcb, $this->formatPrix($productDetails->prix),
+                $productDetails->uv, '', '', '', '', $productDetails->poids, $productDetails->volume,
+                (int)$productDetails->couche_palette, (int)$productDetails->colis_palette,
+                (string)$productDetails->douanier,  $productDetails->qualification, $productDetails->gencod, ''];
+            } else if ($type == 'boncommande') {
+              $productRow = [
+                $productDetails->code , $productDetails->remplacement_product, $productDetails->title, $productDetails->pcb,
+                $this->formatPrix($productDetails->prix), $productDetails->uv, $productDetails->poids,
+                $productDetails->volume, $this->formatDLV($productDetails->dlv),
+                $productDetails->duree_vie, $productDetails->gencod, (string)$productDetails->douanier, '',
+                $productDetails->dangereux, $productDetails->Origins['title']];
+            }
+
+            return $productRow;
+          }
+
+
 
 
 }

@@ -9,6 +9,7 @@ use Cake\Filesystem\File;
 
 class FieldCheck
 {
+
     /**
      * Liste des libelles SANS MARQUES
      * Utiliser lors de la verification de la catégorie
@@ -357,7 +358,7 @@ class FieldCheck
     {
       //TODO Refactoriser avec searchBrand Method en ajouter en paramettre  $valueSavedId en dernier de la fonction
       // avec un valeur à null par default pour savoir quand on a affaire à un update
-      
+
 
       // si valeur est egale à sans marques
       if(array_search($value, $this->sansmarqueList)){

@@ -418,7 +418,6 @@ class ProductsController extends AppController
       // Définition des entetes
       if($type == 'catalogue') {
         $header = $catalogueHelpers->catalogueHeaders;
-        $i_colonneTemoin = 5; //la valeur de debut de la colonne témoin
       } else if ($type == 'boncommande') {
         $header = $catalogueHelpers->boncommandeHeaders;
       }
@@ -450,88 +449,78 @@ class ProductsController extends AppController
 
                   //Boucle des sous catégories
                   $subcategories = $subcategoriesList->find('all')->where(['category_id =' => $category->id]);
+                  // Verification pour la subcat produits bio
+                  $listProductAjouter = false;
                   foreach($subcategories as $subcategory) {
 
-                        //Boucle des articles
-                        $products = $this->Products->find('all')
-                                                   ->where(['Products.active =' => 1, 'Products.subcategory_id =' => $subcategory->id])
-                                                   ->contain(['origins','categories','subcategories','brands']);
-                        // On verifie si il y a des produits dans la sousCategorie  et que le type est catalogue
-                        if($products->count()>0 && $type == 'catalogue') {
-                          $writer->addRowWithStyle(
-                              ['','','','','','',$subcategory->title], $catalogueHelpers->getTitleStyle(22, '00B050'));
+                    // Si la subcat est "Produit bio" et qu'elle a deja été ajouté on passe à la subcat suivante
+                    if($subcategory->title == 'PRODUITS BIOLOGIQUES ET DIÉTÉTIQUES' && $listProductAjouter) {
+                      continue;
+                    }
+                    // List des subcat ID pour la requette
+                    if(in_array($subcategory->id, $catalogueHelpers->subcatBio_ids)) { // Si produits bio
+                      $subcat_ids = ['210','211','212','213','214','215','216','217','218','219'];
+                      $listProductAjouter = true;
+                    } else { // Si autre que produits bio
+                      $subcat_ids = [$subcategory->id];
+                    }
+
+                    //Boucle des articles
+                    $products = $this->Products->find('all')
+                                               ->where(['Products.active =' => 1, 'Products.subcategory_id IN' => $subcat_ids])
+                                               ->contain(['origins','categories','subcategories','brands']);
+
+                    // On verifie si il y a des produits dans la sousCategorie  et que le type est catalogue
+                    if($products->count()>0 && $type == 'catalogue') {
+                      $writer->addRowWithStyle(
+                          ['','','','','','',$subcategory->title], $catalogueHelpers->getTitleStyle(22, '00B050'));
+                    }
+
+
+                    $listQualiM = []; // Initialisation des articles avec le code qualification M
+                    $listQualiP = []; // Initialisation des articles avec le code qualification P
+                    $listQualiA = []; // Initialisation des articles avec le code qualification A
+                    foreach($products as $row) {
+                      // Genere la ligne produit en fonction du type Catalogue ou bon de commande
+                      $productRow =  $catalogueHelpers->generateRow($row, $type);
+
+                      // On ajoute la ligne du produit dans un tableau en fonction de la qualification
+                      switch ($row->qualification) {
+                        case 'P':
+                          $listQualiP[] = $productRow;
+                          break;
+
+                        case 'M':
+                          $listQualiM[] = $productRow;
+                          break;
+
+                        default:
+                          $listQualiA[] = $productRow;
+                          break;
+                      }
+
+                    }
+
+                    // Tri par marque pour les MDD
+                    $listQualiM = $catalogueHelpers->sortMDDMarques($listQualiM);
+                    // Orginiser les tableaux 1er prix, MDD, Marques nationale
+                    $listeProducts = $catalogueHelpers->orderProduct($listQualiP, $listQualiM, $listQualiA);
+
+                    //foreach qui va ajouter les lignes marques et produits au fichier Excel
+                    foreach ($listeProducts as $key => $value) {
+                      //Get le style en fonction de la marque
+                      $style = $catalogueHelpers->renderStyle($value['Marque']);
+                      if ($type == 'catalogue') {
+                        //if(empty($value['Marque'])){ $value['Marque'] = 'Autres marques';} // Si la marque n'existe pas on cree autres marques
+                        if($value['Marque'] !== 'VIN'){ // On créé la ligne Marque uf pour la marque VIN
+                          $writer->addRowWithStyle(['','','','','','',$value['Marque']], $style['Marque']);
                         }
-
-                        $listQualiM = []; // Initialisation des articles avec le code qualification M
-                        $listQualiP = []; // Initialisation des articles avec le code qualification P
-                        $listQualiA = []; // Initialisation des articles avec le code qualification A
-                        foreach($products as $row) {
-
-                          // Formatage de la date dlv
-                          if(!empty($row->dlv)){  $row->dlv = date_format($row->dlv, 'd-m-Y'); }
-                          // Formatage du Tarif
-                          if(empty($row->prix)){  $row->prix = 'Au cours'; }
-                          // Formatage colonne New
-                          if($row->new == 1){  $row->new = 'New'; } else { $row->new = ''; }
-                          // Formatage colonne Maarque pour les vins
-                          if($row->Brands['title'] == 'VIN'){  $row->Brands['title'] = '-'; }
-
-                          // Information exporter pour chaque produit
-                          if ($type == 'catalogue') {
-                            $ligne = [
-                              $row->code , '', '', $row->new, $row->duree_vie, $row->dlv,
-                              $row->title, $row->Brands['title'], $row->pieceartk,
-                              $row->pcb, $row->prix, $row->uv, '', '', '', '',
-                              $row->poids, $row->volume, (int)$row->couche_palette,
-                              (int)$row->colis_palette, (string)$row->douanier,
-                              $row->qualification, $row->gencod, ''];
-                          } else if ($type == 'boncommande') {
-                            $ligne = [
-                              $row->code , $row->remplacement_product, $row->title, $row->pcb,
-                              $row->prix, $row->uv, $row->poids, $row->volume, $row->dlv,
-                              $row->duree_vie, $row->gencod, (string)$row->douanier, '',
-                              $row->dangereux, $row->Origins['title']];
-                          }
-
-                            switch ($row->qualification) {
-                              case 'P':
-                                $listQualiP[] = $ligne;
-                                break;
-
-                              case 'M':
-                                $listQualiM[] = $ligne;
-                                break;
-
-                              default:
-                                $listQualiA[] = $ligne;
-                                break;
-                            }
-
-                        }
-
-                        // Tri par marque pour les MDD
-                        $listQualiM = $catalogueHelpers->sortMDDMarques($listQualiM);
-                        // Orginiser les tableaux 1er prix, MDD, Marques nationale
-                        $listeProducts = array_merge($catalogueHelpers->getProductsToDisplay($listQualiM, 'M'),
-                                                     $catalogueHelpers->getProductsToDisplay($listQualiA));
-                        $listeProducts = array_merge($catalogueHelpers->getProductsToDisplay($listQualiP),$listeProducts);
-
-                        //foreach qui va ajouter les lignes marques et produits au fichier Excel
-                        foreach ($listeProducts as $key => $value) {
-
-                        //Get le style en fonction de la marque
-                        $style = $catalogueHelpers->renderStyle($value['Marque']);
-                        if ($type == 'catalogue') {
-                            //if(empty($value['Marque'])){ $value['Marque'] = 'Autres marques';} // Si la marque n'existe pas on cree autres marques
-                            if($value['Marque'] !== 'VIN'){ // On créé la ligne Marque uf pour la marque VIN
-                              $writer->addRowWithStyle(['','','','','','',$value['Marque']], $style['Marque']);
-                            }
-                          }
-                          //On boucle sur les ligne produit associé à la marque
-                          foreach ($value['Produits'] as $key => $article) {
-                            $writer->addRowWithStyle($article, $style['Product']);
-                          }
-                        }
+                      }
+                      //On boucle sur les ligne produit associé à la marque
+                      foreach ($value['Produits'] as $key => $article) {
+                        $writer->addRowWithStyle($article, $style['Product']);
+                      }
+                    }
 
                   } //Foreach souscategorie end
 
@@ -539,23 +528,14 @@ class ProductsController extends AppController
 
       } //Foreach Store end
 
+      // pour le bon de commande, on ajoute à la fin du Excel tous les articles inactifs sans trie particulier
       if ($type == 'boncommande') {
-
-        $products = $this->Products->find('all')->contain(['Origins']);
-        //debug($products);
-
+        // Requete tous les produits non actifs
+        $products = $this->Products->find('all')->where(['Products.active =' => 0])->contain(['origins']);
+        // Ajouter tous les produits non actif
         foreach ($products as $row) {
-          //debug();
-          $origine = $row->origin['title'];
-          //die;
-          // Formatage de la date dlv
-          if(!empty($row->dlv)){  $row->dlv = date_format($row->dlv, 'd-m-Y'); }
-          $ligne = [
-            $row->code , $row->remplacement_product, $row->title, $row->pcb, $row->prix,$row->uv,$row->poids, $row->volume,
-            $row->dlv, $row->duree_vie, $row->gencod,(string)$row->douanier,'',$row->dangereux,$origine];
-          //debug($ligne);
-          //die;
-            $writer->addRow($ligne);
+          $productRow =  $catalogueHelpers->generateRow($row, $type);
+          $writer->addRow($productRow);
         }
 
       }

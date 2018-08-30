@@ -111,9 +111,9 @@ class BrandsController extends AppController
 
 
     /**
-     * Import method
-     *
-     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     * import method
+     * Ajouter via une table de correspondance CSV les nouvelles marques ['Libellé marque']
+     * @return true| Return true quand les insert sont terminés
      */
     public function import()
     {

@@ -102,15 +102,13 @@ class FieldCheck
               ['99132',	['2AL']],
               ['99197',	['2AL']]];
 
-    public function isValidDate($field, $value, $product_code)
+    public function isValidDate($date)
     {
       // Regex du format date jj/mm/YYYY
       $regex = '/(^(((0[1-9]|1[0-9]|2[0-8])[\/](0[1-9]|1[012]))|((29|30|31)[\/](0[13578]|1[02]))|((29|30)[\/](0[4,6,9]|11)))[\/](19|[2-9][0-9])\d\d$)|(^29[\/]02[\/](19|[2-9][0-9])(00|04|08|12|16|20|24|28|32|36|40|44|48|52|56|60|64|68|72|76|80|84|88|92|96)$)/m';
-      preg_match_all($regex, $value, $matches, PREG_SET_ORDER, 0);
+      preg_match_all($regex, $date, $matches, PREG_SET_ORDER, 0);
 
-      if(empty($matches) && !empty($value)) { //Si la valeur n'existe pas on insert un warning
-        $warning = new Warnings;
-        $warning->insert($field.' ne correspond pas au format date jj/mm/YYYY', $product_code, $field,  $value);
+      if(empty($matches) && !empty($date)) { //Si la valeur n'existe pas on insert un warning
         return false;
       }
         return true;
@@ -362,6 +360,8 @@ class FieldCheck
 
       // si valeur est egale à sans marques
       if(array_search($value, $this->sansmarqueList)){
+        debug('1-'.$valueSavedId);
+
         return $valueSavedId;
       }
 
@@ -372,6 +372,8 @@ class FieldCheck
       if (!is_null($brand)) {  // Si non trouve une correspondance dans la table brands
         // Si l'id de la marque enregister correspond à l'id de la nouvelle
         if($brand->id == $valueSavedId) {
+          debug('2-'.$brand->id);
+
           return $brand->id;
         }
       };
@@ -382,15 +384,19 @@ class FieldCheck
       if (!is_null($shortbrand)) {  // Si non trouve une correspondance dans la table $shortorigin on renvoie origin_id associé
         // Si l'id de la marque enregister correspond à l'id de la nouvelle
         if($shortbrand->brand_id == $valueSavedId) {
-          return $shortbrand->brand_id;
+          //return $shortbrand->brand_id;
+          debug('3-'.$shortbrand->brand_id);
+
         }
       };
       // Si différent warning
       //Sinon on créée une alerte Origin inconu et on return null pour la valeur
       $warning = new Warnings;
       $warning->insert('La marque ne correspond pas à la marque enregistrer dans la base de donnée', $product_code, $field, $value);
+      debug('4-'.$valueSavedId);
+
       return $valueSavedId;
-      die;
+
     }
 
     /**
@@ -621,6 +627,82 @@ class FieldCheck
         }
       }
         return $subcategory_code;
+    }
+
+    /**
+     * brandCarefourVariations method
+     * Lister toutes les variations de la marque CARREFOUR et les enregistrer dans un array
+     * @return array| return array de toutes les variantes de la marque CARREFOUR ['variante de la marque']
+     */
+    public function brandCarefourVariations()
+    {
+      // Recherche de la value dans la table brands
+      $brandSearch = TableRegistry::get('Brands');
+      $brand = $brandSearch->find()->where(['title LIKE' => '%CARREFOUR%']);
+
+      foreach ($brand as $value1) {
+        //debug($row->title);
+        $carrefour_Brand_List [] = $value1->title;
+        // Recherche dans des shortbrands associé à la brands
+        $shortbrandSearch = TableRegistry::get('Shortbrands');
+        $shortbrand = $shortbrandSearch->find()->where(['brand_id =' => $value1->id]);
+        foreach ($shortbrand as $value2) {
+          $carrefour_Brand_List [] = $value2->title;
+        }
+      }
+
+      return $carrefour_Brand_List;
+    }
+
+
+    /**
+     * dlvControle method
+     * Controle du champs DLV
+     * @return string|null return la date formater ou null
+     */
+    public function dlvControle($key, $dlv, $code_produit, $isActive, $isInsert, $dlvSaved = null)
+    {
+      debug('Field : '.$key);
+      debug('Valeur de la DLV : '.$dlv);
+      debug('Code produit : '.$code_produit);
+      debug('Actif : '.$isActive);
+      debug('Insertion : '.$isInsert);
+      debug('Valeur dans la base : '.$dlvSaved);
+
+      // Si Insert et Actif et le format de la date n'est pas bon
+      if($isInsert && $isActive && !$this->isValidDate($dlv)) {
+        $alert = true;
+        $dlvReturn = null;
+      }
+      // Si Update et Actif et le format de la date n'est pas bon
+      if(!$isInsert && $isActive && !$this->isValidDate($dlv)) {
+        $alert = true;
+        $dlvReturn = $dlvSaved;
+      }
+
+      // Si Insert et inactif et et le format de la date n'est pas bon
+      if($isInsert && !$isActive && !$this->isValidDate($dlv)) {
+        $dlvReturn = null;
+      }
+
+      // Si Update et inactif et et le format de la date n'est pas bon
+      if(!$isInsert && !$isActive && !$this->isValidDate($dlv)) {
+        $dlvReturn = $dlvSaved;
+      }
+
+      // Si Update et inactif et et le format de la date n'est pas bon
+      if(isset($alert)) {
+        // On enregistre une alerte
+        $warning = new Warnings;
+        $warning->insert($key.' ne correspond pas au format date jj/mm/YYYY', $code_produit, $key,  $dlv);
+      }
+
+      if($this->isValidDate($dlv) && !empty($dlv)) { // Si la date n'est pas vide
+       // On verifie la durée de la DLV (> à 4 mois) et on met au format YYY/mm/dd pour insert dans la base
+       $dlvReturn = $fieldCheck->checkDlv($dlv);
+     }
+
+      return $dlvReturn;
     }
 
 }

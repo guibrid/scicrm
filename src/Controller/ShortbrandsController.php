@@ -116,17 +116,17 @@ class ShortbrandsController extends AppController
     }
 
     /**
-     * Import method
-     *
-     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     * import method
+     * Ajouter via une table de correspondance CSV les nouvelles abréviations de marques ['Libellé abreviation', 'Libelle marque']
+     * @return true| Return true quand les insert sont terminés
      */
     public function import()
     {
       $reader = ReaderFactory::create(Type::CSV); // for CSV files
-      $reader->setFieldDelimiter(';');
+      $reader->setFieldDelimiter('|');
       $reader->open('files/shortbrandslist.csv');
       $i = 0;
-$u =0;
+      $u =0;
       foreach ($reader->getSheetIterator() as $sheet) {
 
         foreach ($sheet->getRowIterator() as $key => $productRow) {

@@ -102,13 +102,16 @@ class FieldCheck
               ['99132',	['2AL']],
               ['99197',	['2AL']]];
 
-    public function isValidDate($date)
+
+    public function isValidDate($field, $value, $product_code)
     {
       // Regex du format date jj/mm/YYYY
       $regex = '/(^(((0[1-9]|1[0-9]|2[0-8])[\/](0[1-9]|1[012]))|((29|30|31)[\/](0[13578]|1[02]))|((29|30)[\/](0[4,6,9]|11)))[\/](19|[2-9][0-9])\d\d$)|(^29[\/]02[\/](19|[2-9][0-9])(00|04|08|12|16|20|24|28|32|36|40|44|48|52|56|60|64|68|72|76|80|84|88|92|96)$)/m';
-      preg_match_all($regex, $date, $matches, PREG_SET_ORDER, 0);
+      preg_match_all($regex, $value, $matches, PREG_SET_ORDER, 0);
 
-      if(empty($matches) && !empty($date)) { //Si la valeur n'existe pas on insert un warning
+      if(empty($matches) && !empty($value)) { //Si la valeur n'existe pas on insert un warning
+        $warning = new Warnings;
+        $warning->insert($field.' ne correspond pas au format date jj/mm/YYYY', $product_code, $field,  $value);
         return false;
       }
         return true;

@@ -137,27 +137,19 @@ public function validate($data) {
 
         break;
 
-      case 'dlv': // date ou vide
-      //debug('Return : '.$fieldCheck->dlvControle($key, $data['dlv'], $data['code'], $isActive, $isInsert, $productSaved['dlv']));
-      //die;
-        // Si la date n'est pas bonne
-        if(!$fieldCheck->isValidDate($key, $data['dlv'], $data['code'])) {
-
-            // On enregistre une alerte
-            $warning = new Warnings;
-            $warning->insert($field.' ne correspond pas au format date jj/mm/YYYY', $product_code, $field,  $value);
+        case 'dlv': // date ou vide
+          if (!$fieldCheck->isValidDate($key, $data['dlv'], $data['code']) ) { //Check si le format et le date sont valides
             // INSERT / UPDATE
             if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
               $data['dlv'] = null;
             } else { // Si c'est un update on garde le champs enregistré dans la base, et la valeur en erreur sera dans le warning
               $data['dlv'] = $productSaved['dlv'];
             }
-        } else if(!empty($data['dlv'])) { // Si la date n'est pas vide
-          // On verifie la durée de la DLV (> à 4 mois) et on met au format YYY/mm/dd pour insert dans la base
-          $data['dlv'] = $fieldCheck->checkDlv($data['dlv']);
-        }
-
-        break;
+          } else if(!empty($data['dlv'])) { // Si la date n'est pas vide
+            // On verifie la durée de la DLV (> à 4 mois) et on met au format YYY/mm/dd pour insert dans la base
+            $data['dlv'] = $fieldCheck->checkDlv($data['dlv']);
+          }
+          break;
 
       case 'duree_vie': // entier ou vide
 

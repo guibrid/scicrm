@@ -408,6 +408,7 @@ class ProductsController extends AppController
         // Populate le sommaire
         $sheet = $writer->getCurrentSheet();
         $sheet->setName('Commande');
+        $writer->addRows($catalogueHelpers->generateCommande());
       }
 
       // Créé la nouvelle sheet le catalogue ou le bon de commande
@@ -581,6 +582,54 @@ class ProductsController extends AppController
           } else {
             Debug('La marque '.$productRow[1].' N existe pas');
           }
+
+
+        }
+      }
+          debug('Mise à jour des marques OK');
+    }
+
+    /**
+     * updateSansMarques method
+     * Mettre a jour via une table de correspondance CSV les articles sans marques ['Code produit', 'Libelle']
+     * @return true| Return true quand l'update est terminé
+     */
+    public function updateOrigins()
+    {
+      $time_start = microtime(true);
+      $csvFilePath = "files/updateproductorigin.csv";
+      //$csvNbrRows = count(file($csvFilePath));
+      $reader = ReaderFactory::create(Type::CSV); // for CSV files
+      $reader->setFieldDelimiter('|');
+      $reader->open($csvFilePath);
+
+      foreach ($reader->getSheetIterator() as $sheet) {
+
+        foreach ($sheet->getRowIterator() as $key => $productRow) {
+          $codeproduit = $productRow[0];
+          $originTitle = utf8_encode ($productRow[1]);
+          //debug($originTitle);
+
+          $origins = TableRegistry::get('origins');
+          $origins = $origins->find('all')
+                            ->where(['title =' => $originTitle])
+                            ->first();
+//debug($origins);
+
+          if(is_null($origins)){
+            $origins->id = NULL;
+          }
+
+//debug($origins->id);
+//die;
+            $product =  $this->Products->find('all')
+                          ->where(['code =' => $codeproduit]);
+
+            if($product->update()->set(['origin_id' => $origins->id])->where(['code' => $codeproduit])->execute()) {
+            } else {
+              Debug('Impossible de mettre à jour cet article:'.$codeproduit);
+            }
+
 
 
         }

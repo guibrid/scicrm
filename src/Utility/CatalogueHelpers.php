@@ -168,6 +168,35 @@ class CatalogueHelpers
     }
 
     /**
+     * generateCommande method
+     * genere la page commande du bon de commande
+     * @return array| Return le tableau des lignes de la page commande
+     */
+    public function generateCommande()
+    {
+      $current_month = date("F Y");
+      $premiermois = date("01/m/Y");
+      $data = [
+        ['','','','','','BON DE COMMANDE '.$current_month],
+        ['MODE D\'EMPLOI DU BON DE COMMANDE '],
+        ['1) Saisir le code article en colonne A et le nombre de colis en colonne B'],
+        ['Nota :'],
+        ['Lorsqu\'un code apparaît dans la colonne C "article de remplacement" le ressaisir à la place de l\'ancien code en colonne A'],
+        ['', 'Attention : des articles peuvent être remplacés plusieurs fois.'],
+        ['Lorsque "N/A" apparaît, cela signifie que l\'article est supprimé. Voir dans le catalogue pour remplacement éventuel par une autre référence.'],
+        [''],
+        ['2) Lorsque la saisie de la commande est TERMINEE CLIQUEZ SUR LE BOUTON "Fin Commande"'],
+        [''],
+        ['Zone de saisie de commande', '', '','NE SAISIR AUCUNE DONNEE DANS CES COLONNES'],
+        ['Code',	  'Nombre',	  'Article de',	  'DLV indicative',	'Duré de',	  'DESIGNATION     DES     MARCHANDISES',	'PCB',	  'Qté',	'Poids',	'Volume',	'Tarif', 'UV',	'Montant',	'Poids',	'Volume',	'Code',	     'Gencod',	'Rang',	      'Code',	'Origine'],
+        ['Article',	'de colis',	'remplacement',	'Au',	            'Vie',	      '',	                                    'Colis',	'',	    'Cde',	   'Cde',	  '',      '',	  '',	        'Colis',	'Colis', 	'Douanier',	 '',	      'Catalogue', 	'Produits'],
+        ['',	      '',	        'à ressaisir',	$premiermois,	    'Indicative',	'',	                                    '',     	'',     '',       '',       '',	     '',  	'',      	  '',       '',	      'Indicatif', '',        '',    	      'Dangereux']
+      ];
+
+      return $data;
+    }
+
+    /**
      * generateGarde method
      * genere la page de garde du catalogue
      * @return array| Return le tableau des lignes de la page de garde
@@ -246,9 +275,10 @@ class CatalogueHelpers
       * Formatage du champs prix
       * @return string| Return le prix formaté
       */
-      public function formatPrix($prix)
+      public function formatPrix($prix,$entrepot,$articleremplacement)
       {
-        if(empty($prix)) {
+        $listEntrepot = ['71744', '71746', '89063', '88642', '88884', '1'];
+        if(empty($prix) && !in_array($entrepot,$listEntrepot) && empty($articleremplacement)) {
           $prix = 'Au cours';
         }
         return $prix;
@@ -315,14 +345,16 @@ class CatalogueHelpers
                 $productDetails->code , '', '', $this->formatNew($productDetails->new),
                 $productDetails->duree_vie, $this->formatDLV($productDetails->dlv),
                 $productDetails->title, $this->formatBrand($productDetails->Brands['title']),
-                $productDetails->pieceartk, $productDetails->pcb, $this->formatPrix($productDetails->prix),
+                $productDetails->pieceartk, $productDetails->pcb,
+                $this->formatPrix($productDetails->prix, $productDetails->entrepot, $productDetails->remplacement_product),
                 $productDetails->uv, '', '', '', '', $productDetails->poids, $productDetails->volume,
                 (int)$productDetails->couche_palette, (int)$productDetails->colis_palette,
                 (string)$productDetails->douanier,  $productDetails->qualification, $productDetails->gencod, ''];
             } else if ($type == 'boncommande') {
               $productRow = [
                 $productDetails->code , $productDetails->remplacement_product, $productDetails->title, $productDetails->pcb,
-                $this->formatPrix($productDetails->prix), $productDetails->uv, $productDetails->poids,
+                $this->formatPrix($productDetails->prix, $productDetails->entrepot, $productDetails->remplacement_product),
+                $productDetails->uv, $productDetails->poids,
                 $productDetails->volume, $this->formatDLV($productDetails->dlv),
                 $productDetails->duree_vie, $productDetails->gencod, (string)$productDetails->douanier, '',
                 $productDetails->dangereux, $productDetails->Origins['title']];

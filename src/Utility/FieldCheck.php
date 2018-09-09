@@ -6,7 +6,6 @@ use Cake\ORM\TableRegistry;
 use Cake\Filesystem\Folder;
 use Cake\Filesystem\File;
 
-
 class FieldCheck
 {
 
@@ -363,8 +362,6 @@ class FieldCheck
 
       // si valeur est egale à sans marques
       if(array_search($value, $this->sansmarqueList)){
-        debug('1-'.$valueSavedId);
-
         return $valueSavedId;
       }
 
@@ -375,8 +372,6 @@ class FieldCheck
       if (!is_null($brand)) {  // Si non trouve une correspondance dans la table brands
         // Si l'id de la marque enregister correspond à l'id de la nouvelle
         if($brand->id == $valueSavedId) {
-          debug('2-'.$brand->id);
-
           return $brand->id;
         }
       };
@@ -387,8 +382,7 @@ class FieldCheck
       if (!is_null($shortbrand)) {  // Si non trouve une correspondance dans la table $shortorigin on renvoie origin_id associé
         // Si l'id de la marque enregister correspond à l'id de la nouvelle
         if($shortbrand->brand_id == $valueSavedId) {
-          //return $shortbrand->brand_id;
-          debug('3-'.$shortbrand->brand_id);
+          return $shortbrand->brand_id;
 
         }
       };
@@ -396,8 +390,6 @@ class FieldCheck
       //Sinon on créée une alerte Origin inconu et on return null pour la valeur
       $warning = new Warnings;
       $warning->insert('La marque ne correspond pas à la marque enregistrer dans la base de donnée', $product_code, $field, $value);
-      debug('4-'.$valueSavedId);
-
       return $valueSavedId;
 
     }

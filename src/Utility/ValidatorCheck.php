@@ -205,6 +205,7 @@ public function validate($data) {
 
             // Recherche de l'id dans les tables origins et shortorigins
             $data['origin_id'] = $fieldCheck->searchOrigin($key, $data['origin_id'], $data['code']);
+
             //TODO Add the // INSERT / UPDATE check
 
         break;

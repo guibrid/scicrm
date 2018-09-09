@@ -57,8 +57,8 @@
             echo $this->Form->control('volume');
             echo $warning->warningDisplay($warningList , 'volume');
 
-            echo $this->Form->control('dlv');
-            echo $warning->warningDisplay($warningList , 'dlv');
+            //echo $this->Form->control('dlv');
+            //echo $warning->warningDisplay($warningList , 'dlv');
 
             echo $this->Form->control('duree_vie');
             echo $warning->warningDisplay($warningList , 'duree_vie');

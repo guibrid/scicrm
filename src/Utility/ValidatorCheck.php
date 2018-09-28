@@ -8,18 +8,16 @@ use Cake\ORM\TableRegistry;
 class ValidatorCheck
 {
 
-private $VariantesMarqueCarrefour; // Array des variations de la marque CARREFOUR
-
-function __construct() {
-        $fieldCheck = new FieldCheck;
-        $this->VariantesMarqueCarrefour = $fieldCheck->brandCarefourVariations();
-}
-
 
 public function validate($data) {
 
   $fieldCheck = new FieldCheck;
-
+  // Determiner si produit actif
+  if($data['active'] == 1) {
+    $activeProduct = true;
+  } else {
+    $activeProduct = true;
+  }
   // Determiner si c'est un insert ou un update
   if (!isset($data['id'])) { // Si le product n'a pas d'id c'est un insert
     $isInsert = true;
@@ -29,29 +27,21 @@ public function validate($data) {
     $productSaved = $Products->get($data['id'])->toArray(); // On récupere toutes les datas enregistré sur l'article dans la base64_decode
   }
 
-  // Déterminer si le produit est actif ou non
-  //Si vide et que ce n'est pas un produit CARREFOUR, on active le produit
-  if( empty($data['remplacement_product']) && !in_array($data['brand_id'], $this->VariantesMarqueCarrefour)){
-    $data['active'] = 1;
-
-  }
-
   //Lister les variantes de la marque carrefour dans un tableaux
   foreach($data as $key => $row) {
 
     switch ($key) {
 
       case 'code': // alphanumeric, no empty
-
-          $fieldCheck->isalphaNum($key, $row, $data['code']); // Check si alphnumerique
-          $fieldCheck->isVide($key, $row, $data['code']); // Check si empty
+          $fieldCheck->isalphaNum($key, $row, $data['code'], $activeProduct); // Check si alphnumerique
+          $fieldCheck->isVide($key, $row, $data['code'], $activeProduct); // Check si empty
           //On ne met pas le code à null car il est insere dans la table warning
 
         break;
 
       case 'remplacement_product': // alphanumeric, empty
 
-            if (!$fieldCheck->isalphaNum($key, $row, $data['code'])) {  // Check si alphnumerique
+            if (!$fieldCheck->isalphaNum($key, $row, $data['code'], $activeProduct)) {  // Check si alphnumerique
               // INSERT / UPDATE
               if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
                 $data['remplacement_product'] = null;
@@ -69,7 +59,7 @@ public function validate($data) {
 
       case 'pcb': // entier,  no empty
 
-          if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->isVide($key, $row, $data['code'])) {
+          if (!$fieldCheck->isInteger($key, $row, $data['code'], $activeProduct) || !$fieldCheck->isVide($key, $row, $data['code'], $activeProduct)) {
             // INSERT / UPDATE
             if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
               $data['pcb'] = null;
@@ -84,7 +74,7 @@ public function validate($data) {
         $data['prix'] = str_replace(",", ".", $data['prix']); // On remplace la virgule par un point
 
           //TODO Si code entrepot carrefour prix obligatoire
-          if (!$fieldCheck->isDouble($key, $data['prix'] , $data['code'])) {  // Check si c'est un double
+          if (!$fieldCheck->isDouble($key, $data['prix'] , $data['code'], $activeProduct)) {  // Check si c'est un double
             // INSERT / UPDATE
             if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
               $data['prix'] = null;
@@ -98,7 +88,7 @@ public function validate($data) {
       case 'uv': // U ou K, no empty
         $data['uv'] = strtoupper($data['uv']);
 
-          if (!$fieldCheck->matchString($key, $data['uv'], $data['code'], ['U','K']) || !$fieldCheck->isVide($key, $data['uv'], $data['code'])) {
+          if (!$fieldCheck->matchString($key, $data['uv'], $data['code'], ['U','K'], $activeProduct) || !$fieldCheck->isVide($key, $data['uv'], $data['code'], $activeProduct)) {
             // INSERT / UPDATE
             if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
               $data['uv'] = null;
@@ -112,7 +102,7 @@ public function validate($data) {
       case 'poids': // double, no empty
         $data['poids'] = str_replace(",", ".", $data['poids']); // On remplace la virgule par un point
 
-          if (!$fieldCheck->isDouble($key, $data['poids'] , $data['code']) || !$fieldCheck->isVide($key, $data['poids'], $data['code'])) {  // Check si c'est un double ou vide
+          if (!$fieldCheck->isDouble($key, $data['poids'] , $data['code'], $activeProduct) || !$fieldCheck->isVide($key, $data['poids'], $data['code'], $activeProduct)) {  // Check si c'est un double ou vide
             // INSERT / UPDATE
             if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
               $data['poids'] = null;
@@ -126,7 +116,7 @@ public function validate($data) {
       case 'volume': // double, no empty
         $data['volume'] = str_replace(",", ".", $data['volume']); // On remplace la virgule par un point
 
-          if (!$fieldCheck->isDouble($key, $data['volume'] , $data['code']) || !$fieldCheck->isVide($key, $data['volume'], $data['code'])) {  // Check si c'est un double ou vide
+          if (!$fieldCheck->isDouble($key, $data['volume'] , $data['code'], $activeProduct) || !$fieldCheck->isVide($key, $data['volume'], $data['code'], $activeProduct)) {  // Check si c'est un double ou vide
             // INSERT / UPDATE
             if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
               $data['volume'] = null;
@@ -138,7 +128,7 @@ public function validate($data) {
         break;
 
         case 'dlv': // date ou vide
-          if (!$fieldCheck->isValidDate($key, $data['dlv'], $data['code']) ) { //Check si le format et le date sont valides
+          if (!$fieldCheck->isValidDate($key, $data['dlv'], $data['code'], $activeProduct) ) { //Check si le format et le date sont valides
             // INSERT / UPDATE
             if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
               $data['dlv'] = null;
@@ -153,7 +143,7 @@ public function validate($data) {
 
       case 'duree_vie': // entier ou vide
 
-          if (!$fieldCheck->isInteger($key, $row, $data['code'])) {
+          if (!$fieldCheck->isInteger($key, $row, $data['code'], $activeProduct)) {
             // INSERT / UPDATE
             if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
               $data['duree_vie'] = null;
@@ -166,7 +156,7 @@ public function validate($data) {
 
       case 'gencod': // entier,  no empty
 
-          if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->isVide($key, $row, $data['code'])) {
+          if (!$fieldCheck->isInteger($key, $row, $data['code'], $activeProduct) || !$fieldCheck->isVide($key, $row, $data['code'], $activeProduct)) {
             // INSERT / UPDATE
             if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
               $data['gencod'] = null;
@@ -189,7 +179,7 @@ public function validate($data) {
         $data['dangereux'] = str_replace(",", ".", $data['dangereux']); // On remplace la virgule par un point
         $data['dangereux'] = $fieldCheck->sanitizeData($data['dangereux']);
 
-          if (!$fieldCheck->isNumeric($key, $data['dangereux'], $data['code'])) {  // Check si numerique (entier ou double)
+          if (!$fieldCheck->isNumeric($key, $data['dangereux'], $data['code'], $activeProduct)) {  // Check si numerique (entier ou double)
             // INSERT / UPDATE
             if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
               $data['dangereux'] = null;
@@ -204,7 +194,7 @@ public function validate($data) {
           $data['origin_id']= $fieldCheck->sanitizeData($data['origin_id']); //Clean la variable
 
             // Recherche de l'id dans les tables origins et shortorigins
-            $data['origin_id'] = $fieldCheck->searchOrigin($key, $data['origin_id'], $data['code']);
+            $data['origin_id'] = $fieldCheck->searchOrigin($key, $data['origin_id'], $data['code'], $activeProduct);
 
             //TODO Add the // INSERT / UPDATE check
 
@@ -213,7 +203,7 @@ public function validate($data) {
       case 'tva': // numerique ou vide
         $data['tva'] = str_replace(",", ".", $data['tva']); // On remplace la virgule par un point
 
-          if (!$fieldCheck->isNumeric($key, $data['tva'] , $data['code']))
+          if (!$fieldCheck->isNumeric($key, $data['tva'] , $data['code'], $activeProduct))
                {  // Check si c'est un double ou vide
             // INSERT / UPDATE
             if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
@@ -227,7 +217,7 @@ public function validate($data) {
 
       case 'cdref': // entier, ou vide
 
-        if (!$fieldCheck->isInteger($key, $row, $data['code']) ) {
+        if (!$fieldCheck->isInteger($key, $row, $data['code'], $activeProduct) ) {
           // INSERT / UPDATE
           if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
             $data['cdref'] = null;
@@ -243,7 +233,7 @@ public function validate($data) {
 
           $data['category_id'] = $fieldCheck->checkOldCategories($data['category_id']); // Vérifier si le code catégorie est un ancien code
           // Recherche de le code dans les tables categories
-          $data['category_id'] = $fieldCheck->searchCategory($key, $data['category_id'], $data['entrepot'], $data['code']);
+          $data['category_id'] = $fieldCheck->searchCategory($key, $data['category_id'], $data['entrepot'], $data['code'], $activeProduct);
           //TODO Add the // INSERT / UPDATE check
 
         break;
@@ -253,7 +243,7 @@ public function validate($data) {
 
           $data['subcategory_id']= $fieldCheck->checkOldSubCategories($data['subcategory_id']); // Vérifier si le code subcatégorie est un ancien code
           // Recherche de le code dans les tables subcategories
-          $data['subcategory_id'] = $fieldCheck->searchSubcategory($key, $data['subcategory_id'], $data['entrepot'], $data['code']);
+          $data['subcategory_id'] = $fieldCheck->searchSubcategory($key, $data['subcategory_id'], $data['entrepot'], $data['code'], $activeProduct);
           //TODO Add the // INSERT / UPDATE check
 
         break;
@@ -263,7 +253,7 @@ public function validate($data) {
         // Sinon alerte entrepot inconu
         $data['entrepot'] = $fieldCheck->sanitizeData($data['entrepot']);  //Clean la variable
 
-          if(!$fieldCheck->checkEntrepot($key, $data['entrepot'], $data['code'])) {
+          if(!$fieldCheck->checkEntrepot($key, $data['entrepot'], $data['code'], $activeProduct)) {
             // INSERT / UPDATE
             if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
               $data['entrepot'] = null;
@@ -277,7 +267,7 @@ public function validate($data) {
       case 'qualification': // P M ou A , no empty
         $data['qualification'] = strtoupper($data['qualification']);
 
-          if (!$fieldCheck->matchString($key, $data['qualification'], $data['code'], ['P','M','A']) || !$fieldCheck->isVide($key, $data['qualification'], $data['code'])) {
+          if (!$fieldCheck->matchString($key, $data['qualification'], $data['code'], ['P','M','A'], $activeProduct) || !$fieldCheck->isVide($key, $data['qualification'], $data['code'], $activeProduct)) {
             // INSERT / UPDATE
             if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
               $data['qualification'] = null;
@@ -290,7 +280,7 @@ public function validate($data) {
 
       case 'couche_palette': // entier ou vide
 
-          if (!$fieldCheck->isInteger($key, $row, $data['code'])) {
+          if (!$fieldCheck->isInteger($key, $row, $data['code'], $activeProduct)) {
             // INSERT / UPDATE
             if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
               $data['couche_palette'] = null;
@@ -303,7 +293,7 @@ public function validate($data) {
 
       case 'colis_palette': // entier ou vide
 
-          if (!$fieldCheck->isInteger($key, $row, $data['code'])) {
+          if (!$fieldCheck->isInteger($key, $row, $data['code'], $activeProduct)) {
             // INSERT / UPDATE
             if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
               $data['colis_palette'] = null;
@@ -317,13 +307,13 @@ public function validate($data) {
       case 'pieceartk': // entier ou vide
 
           //Verifier si pieceartk correspond avec la colonne UV
-          $data['pieceartk'] = $fieldCheck->checkPieceartk($key, $row, $data['code'], $data['uv'],  $data['entrepot']);
+          $data['pieceartk'] = $fieldCheck->checkPieceartk($key, $row, $data['code'], $data['uv'],  $data['entrepot'], $activeProduct);
 
         break;
 
       case 'ifls_remplacement': // alphanumeric, empty
 
-          if (!$fieldCheck->isalphaNum($key, $row, $data['code'])) {  // Check si alphnumerique
+          if (!$fieldCheck->isalphaNum($key, $row, $data['code'], $activeProduct)) {  // Check si alphnumerique
             // INSERT / UPDATE
             if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
               $data['ifls_remplacement'] = null;
@@ -337,7 +327,7 @@ public function validate($data) {
 
       case 'assortiment': // entier, no empty
 
-          if (!$fieldCheck->isInteger($key, $row, $data['code']) || !$fieldCheck->isVide($key, $row, $data['code'])) {
+          if (!$fieldCheck->isInteger($key, $row, $data['code'], $activeProduct) || !$fieldCheck->isVide($key, $row, $data['code'], $activeProduct)) {
             // INSERT / UPDATE
             if($isInsert){ // Si c'est un insert on enregistre le champs à vide, et la valeur en erreur sera dans le warning
               $data['assortiment'] = null;
@@ -352,13 +342,13 @@ public function validate($data) {
         $data['brand_id']= $fieldCheck->sanitizeData($data['brand_id']); //Clean la variable
         //Renomer la Marques en fonction du cas particulier des subcategories et Qualification lier au Vin
         $listeSubcategoriVin = $fieldCheck->subcategoriesVin; //Call le Array des subcategory lier au vin
-        $data['brand_id'] = $fieldCheck->checkVins($key, $data['brand_id'], $data['code'], $data['subcategory_id'], $data['qualification'], $listeSubcategoriVin);
+        $data['brand_id'] = $fieldCheck->checkVins($key, $data['brand_id'], $data['code'], $data['subcategory_id'], $data['qualification'], $listeSubcategoriVin, $activeProduct);
 
         if($isInsert){ //Si c'est un insert
           // Recherche de l'id dans les tables brands et shortbrands
-          $data['brand_id'] = $fieldCheck->searchBrands($key, $data['brand_id'] , $data['code'], $data['qualification']);
+          $data['brand_id'] = $fieldCheck->searchBrands($key, $data['brand_id'] , $data['code'], $data['qualification'], $activeProduct);
         } else { //Si c'est un update
-          $data['brand_id'] = $fieldCheck->updateBrands($key, $data['brand_id'], $productSaved['brand_id'], $data['code'], $data['qualification']);
+          $data['brand_id'] = $fieldCheck->updateBrands($key, $data['brand_id'], $productSaved['brand_id'], $data['code'], $data['qualification'], $activeProduct);
         }
 
 

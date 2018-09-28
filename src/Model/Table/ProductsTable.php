@@ -78,6 +78,8 @@ class ProductsTable extends Table
     public function beforeMarshal(Event $event, ArrayObject $data, ArrayObject $options)
     {
       $validatorCheck = new ValidatorCheck;
+  
+
       $validatorCheck->validate($data); // Validation personnalisé des données
     }
 

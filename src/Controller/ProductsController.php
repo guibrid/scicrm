@@ -177,8 +177,11 @@ class ProductsController extends AppController
         // Avnt de faire l'importation on réinitialise les champs new et active à 0
         $productSearch = TableRegistry::get('products');
         $productSearch->updateAll(['new' => 0, "active" => 0],'');
-
         $fieldCheck = new FieldCheck;
+
+        //Lister les varifations du nom de marque CARREFOUR
+        //$flipped_Carrefour_variations = array_flip($fieldCheck->brandCarefourVariations());
+
 
         // AJOUT SANS CHUNKS
         foreach ($reader->getSheetIterator() as $sheet) {
@@ -188,22 +191,40 @@ class ProductsController extends AppController
             // On renome les keys du array avec les entetes de la table products
             $productRow = $this->renameHeaderArray($productRow);
 
-              //On recherche si le code article existe dans la table products
-              $product = $productSearch->find('all')
-                                       ->select(['id'])
-                                       ->where(['code' => $productRow['code']]);
+            //On recherche si le code article existe dans la table products
+            $product = $productSearch->find('all')
+                                     ->select(['id','remplacement_product'])
+                                     ->where(['code' => $productRow['code']]);
 
+            // Si le produit est actif
+            if( empty($productRow['remplacement_product']) ){
+
+                $productRow['active'] = '1'; // Set le produit actif
+                if ( $product->count() === 1 ) { // Nbr de resultat de le réquete
+                  //Si il existe on l'ajoute dans la liste des products à update
+                  $product_id = $product->first()->toArray(); // On récupere l'id du produit
+                  $productRow = array_merge($product_id, $productRow); // On ajoute l'id à l'array du product
+                  $updateProductList[$key] = $productRow;
+                } else {
+                  // C'est un isert donc le produit est nouveau. On definit le champs new à 1
+                  $productRow['new'] = '1';
+                  //Si il n'existe pas on l'ajoute dans la liste des products à insert
+                  $insertProductList[$key] = $productRow;
+                }
+            // Si le produit est inactif
+          } else {
+              $productRow['active'] = '0'; // Set le produit actif
               if ( $product->count() === 1 ) { // Nbr de resultat de le réquete
                 //Si il existe on l'ajoute dans la liste des products à update
                 $product_id = $product->first()->toArray(); // On récupere l'id du produit
+                // Si le code de remplacement est différent on update
+                if($product_id['remplacement_product'] <> $productRow['remplacement_product']) {
                 $productRow = array_merge($product_id, $productRow); // On ajoute l'id à l'array du product
                 $updateProductList[$key] = $productRow;
-              } else {
-                // C'est un isert donc le produit est nouveau. On definit le champs new à 1
-                $productRow['new'] = '1';
-                //Si il n'existe pas on l'ajoute dans la liste des products à insert
-                $insertProductList[$key] = $productRow;
+                }
               }
+
+            }
 
           }
 

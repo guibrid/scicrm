@@ -102,15 +102,17 @@ class FieldCheck
               ['99197',	['2AL']]];
 
 
-    public function isValidDate($field, $value, $product_code)
+    public function isValidDate($field, $value, $product_code, $activeProduct)
     {
       // Regex du format date jj/mm/YYYY
       $regex = '/(^(((0[1-9]|1[0-9]|2[0-8])[\/](0[1-9]|1[012]))|((29|30|31)[\/](0[13578]|1[02]))|((29|30)[\/](0[4,6,9]|11)))[\/](19|[2-9][0-9])\d\d$)|(^29[\/]02[\/](19|[2-9][0-9])(00|04|08|12|16|20|24|28|32|36|40|44|48|52|56|60|64|68|72|76|80|84|88|92|96)$)/m';
       preg_match_all($regex, $value, $matches, PREG_SET_ORDER, 0);
 
       if(empty($matches) && !empty($value)) { //Si la valeur n'existe pas on insert un warning
-        $warning = new Warnings;
-        $warning->insert($field.' ne correspond pas au format date jj/mm/YYYY', $product_code, $field,  $value);
+        if($activeProduct){
+          $warning = new Warnings;
+          $warning->insert($field.' ne correspond pas au format date jj/mm/YYYY', $product_code, $field,  $value);
+        }
         return false;
       }
         return true;
@@ -145,45 +147,54 @@ class FieldCheck
         return $dlv;
     }
 
-    public function matchString($field, $value, $product_code, $options)
+    public function matchString($field, $value, $product_code, $options, $activeProduct)
     {
       if (!in_array($value, $options) && !empty($value)) { // On recherche dans le array des options si la valeur existe
         //Si la valeur n'existe pas on insert un warning
-        $warning = new Warnings;
-        $warning->insert($field.' ne correspond pas aux options valide', $product_code, $field,  $value);
+        if($activeProduct){
+          $warning = new Warnings;
+          $warning->insert($field.' ne correspond pas aux options valide', $product_code, $field,  $value);
+        }
         return false;
       }
       return true;
     }
 
-    public function isVide($field, $value, $product_code)
+    public function isVide($field, $value, $product_code, $activeProduct)
     {
       if (empty($value)) {
         //Si la valeur est empty on insert un warning
-        $warning = new Warnings;
-        $warning->insert($field.' est vide', $product_code, $field,  $value);
+        if($activeProduct){
+          $warning = new Warnings;
+          $warning->insert($field.' est vide', $product_code, $field,  $value);
+        }
         return false;
       }
       return true;
     }
 
-    public function isInteger($field, $value, $product_code)
+    public function isInteger($field, $value, $product_code, $activeProduct)
     {
       if (!ctype_digit((string)$value) && !empty($value)) {
         //Si la valeur n'est pas un entier ou vide
-        $warning = new Warnings;
-        $warning->insert($field.' n\'est pas un entier', $product_code, $field,  $value);
+        if($activeProduct){
+          $warning = new Warnings;
+          $warning->insert($field.' n\'est pas un entier', $product_code, $field,  $value);
+        }
         return false;
       }
       return true;
     }
 
-    public function isDouble($field, $value, $product_code)
+    public function isDouble($field, $value, $product_code, $activeProduct)
     {
+
       if (!filter_var($value, FILTER_VALIDATE_FLOAT) && !empty($value)) { // Valide string **.** as float number
         //Si la valeur n'est pas un float
-        $warning = new Warnings;
-        $warning->insert($field.' n\'est pas un chiffre à décimal', $product_code, $field,  $value);
+        if($activeProduct){
+          $warning = new Warnings;
+          $warning->insert($field.' n\'est pas un chiffre à décimal', $product_code, $field,  $value);
+        }
         return false;
       }
       return true;
@@ -201,32 +212,36 @@ class FieldCheck
     }
 
     //Verification du format alphanumerique
-    public function isalphaNum($field, $value, $product_code)
+    public function isalphaNum($field, $value, $product_code, $activeProduct)
     {
       if (!ctype_alnum($value) && !empty($value)) {
         //Si le code n'est pas alpha numérique ou vide on ajoute un warning
-        $warning = new Warnings;
-        $warning->insert($field.' n\'est pas alphanuméric', $product_code, $field, $value);
+        if($activeProduct){
+          $warning = new Warnings;
+          $warning->insert($field.' n\'est pas alphanuméric', $product_code, $field, $value);
+        }
         return false;
       }
       return true;
     }
 
     //Verification du format numerique (entier ou double)
-    public function isNumeric($field, $value, $product_code)
+    public function isNumeric($field, $value, $product_code, $activeProduct)
     {
 
       if (!is_numeric($value) && !empty($value)) {
         //Si le code n'est pas numérique (entier ou double) ou vide on ajoute un warning
-        $warning = new Warnings;
-        $warning->insert($field.' n\'est pas un chiffre entier ou décimal', $product_code, $field, $value);
+        if($activeProduct){
+          $warning = new Warnings;
+          $warning->insert($field.' n\'est pas un chiffre entier ou décimal', $product_code, $field, $value);
+        }
         return false;
       }
       return true;
     }
 
     //Recherche de l'origine
-    public function searchOrigin($field, $value, $product_code)
+    public function searchOrigin($field, $value, $product_code, $activeProduct)
     {
         if(is_null($value) || empty($value)) {
           return null;
@@ -246,8 +261,10 @@ class FieldCheck
         };
 
         //Sinon on créée une alerte Origin inconu et on return null pour la valeur
-        $warning = new Warnings;
-        $warning->insert('Origine n\'existe pas dans la table origins ou shortorigins', $product_code, $field, $value);
+        if($activeProduct){
+          $warning = new Warnings;
+          $warning->insert('Origine n\'existe pas dans la table origins ou shortorigins', $product_code, $field, $value);
+        }
         return null;
     }
 
@@ -260,7 +277,7 @@ class FieldCheck
      * @param string| $product_code = code article du produit
      * @return int|null category_id
      */
-    public function searchCategory($field, $value, $entrepot, $product_code)
+    public function searchCategory($field, $value, $entrepot, $product_code, $activeProduct)
     {
         //Recherche le type d'entrepot dans la liste entrepotType 1AL, 2NAL,...
         $typeList = $this->typeEntrepot($entrepot);
@@ -277,8 +294,10 @@ class FieldCheck
           return $category->id;
         } else {
           //Sinon on créée une alerte Category inconu et on return null pour la valeur
-          $warning = new Warnings;
-          $warning->insert('Ce code catégorie n\'existe pas dans la table categories', $product_code, $field, $value);
+          if($activeProduct){
+            $warning = new Warnings;
+            $warning->insert('Ce code catégorie n\'existe pas dans la table categories', $product_code, $field, $value);
+          }
           return null;
         }
     }
@@ -292,7 +311,7 @@ class FieldCheck
      * @param string| $product_code = code article du produit
      * @return int|null subcategory_id
      */
-    public function searchSubcategory($field, $value, $entrepot, $product_code)
+    public function searchSubcategory($field, $value, $entrepot, $product_code, $activeProduct)
     {
 
         //Recherche le type d'entrepot correspondant à l'article dans la liste entrepotType 1AL, 2NAL,...
@@ -311,8 +330,10 @@ class FieldCheck
 
        // Si on trouve 0 ou plus d'une correspondance alrte car ce n'est pas normal
        if($subcategory->count() != 1) {
-         $warning = new Warnings;
-         $warning->insert('Ce code subcatégorie n\'existe pas, ou est en double', $product_code, $field, $value);
+         if($activeProduct){
+           $warning = new Warnings;
+          $warning->insert('Ce code subcatégorie n\'existe pas, ou est en double', $product_code, $field, $value);
+         }
          return null;
        //Sinon retourne l'id de la subcategory correspondante
        } else {
@@ -322,7 +343,7 @@ class FieldCheck
     }
 
     //Recherche de brands
-    public function searchBrands($field, $value, $product_code, $qualification)
+    public function searchBrands($field, $value, $product_code, $qualification, $activeProduct)
     {
         //$sansmarqueList = ['', '.', '..', '...', 'SANS', 'SANS MARQUE', 'SS MARQUE.', 'DIVERS', 'NC', 'GENERIQUE'];
         // Si la marque est de type 'SANS MARQUE' et que Qualification = P
@@ -347,14 +368,16 @@ class FieldCheck
         };
 
         //Sinon on créée une alerte Origin inconu et on return null pour la valeur
-        $warning = new Warnings;
-        $warning->insert('La marque n\'existe pas dans la table brands ou shortbrands', $product_code, $field, $value);
+        if($activeProduct){
+          $warning = new Warnings;
+          $warning->insert('La marque n\'existe pas dans la table brands ou shortbrands', $product_code, $field, $value);
+        }
         return null;
     }
 
 
     //Recherche de brands
-    public function updateBrands($field, $value, $valueSavedId, $product_code, $qualification)
+    public function updateBrands($field, $value, $valueSavedId, $product_code, $qualification, $activeProduct)
     {
       //TODO Refactoriser avec searchBrand Method en ajouter en paramettre  $valueSavedId en dernier de la fonction
       // avec un valeur à null par default pour savoir quand on a affaire à un update
@@ -388,8 +411,10 @@ class FieldCheck
       };
       // Si différent warning
       //Sinon on créée une alerte Origin inconu et on return null pour la valeur
-      $warning = new Warnings;
-      $warning->insert('La marque ne correspond pas à la marque enregistrer dans la base de donnée', $product_code, $field, $value);
+      if($activeProduct){
+        $warning = new Warnings;
+        $warning->insert('La marque ne correspond pas à la marque enregistrer dans la base de donnée', $product_code, $field, $value);
+      }
       return $valueSavedId;
 
     }
@@ -408,7 +433,7 @@ class FieldCheck
      * @param array| $subcategoriesVin = list des subcategories lié aux vins
      * @return string|null libelle de la marque modifié ou pas
      */
-    public function checkVins($field, $value, $product_code, $subcategory_id, $qualification, $subcategoriesVin)
+    public function checkVins($field, $value, $product_code, $subcategory_id, $qualification, $subcategoriesVin, $activeProduct)
     {
         //Check si si la subcat et la quelitfication sont renseigner pour pouvoir faire la verifiaction
         if (!is_null($subcategory_id) && !is_null($qualification)) {
@@ -433,14 +458,16 @@ class FieldCheck
 
         } else {
           //Sinon on créée une alerte Marque
+          if($activeProduct){
           $warning = new Warnings;
           $warning->insert('Code sous famille ou Qualification absente. Impossible de déterminer la marque lier au Vin', $product_code, $field, $value);
+          }
         }
         return $value;
     }
 
     //Vérification Marques pour les vins
-    public function checkPieceartk($field, $value, $product_code, $uv, $entrepot)
+    public function checkPieceartk($field, $value, $product_code, $uv, $entrepot, $activeProduct)
     {
         /**
         *
@@ -454,20 +481,26 @@ class FieldCheck
           if ( $uv === 'K' && empty($value) ) {
             if (in_array($entrepot, $this->entrepotCarrefour)){ // On verrifie si l'entrepot est Carrefour
               //On créée une alerte
-              $warning = new Warnings;
-              $warning->insert('uv est à K, pieceartk ne peut pas être vide', $product_code, $field, $value);
+              if($activeProduct){
+                $warning = new Warnings;
+                $warning->insert('uv est à K, pieceartk ne peut pas être vide', $product_code, $field, $value);
+              }
               $value = null;
             }
           } else if( $uv === 'U' && !empty($value) ) {
             //On créée une alerte
-            $warning = new Warnings;
-            $warning->insert('uv est à U, pieceartk doit être vide', $product_code, $field, $value);
+            if($activeProduct){
+              $warning = new Warnings;
+              $warning->insert('uv est à U, pieceartk doit être vide', $product_code, $field, $value);
+            }
             $value = null;
           }
         } else {
           //On créée une alerte
-          $warning = new Warnings;
-          $warning->insert('Impossible de definir pieceartk car UV est vide', $product_code, $field, $value);
+          if($activeProduct){
+            $warning = new Warnings;
+            $warning->insert('Impossible de definir pieceartk car UV est vide', $product_code, $field, $value);
+          }
         }
         return $value;
     }
@@ -523,7 +556,7 @@ class FieldCheck
      * @param string| $product_code = code article du produit
      * @return boolean| return true or false
      */
-    public function checkEntrepot($field, $value, $product_code)
+    public function checkEntrepot($field, $value, $product_code, $activeProduct)
     {
       //Pour toute la liste des entrepot valide
        foreach($this->entrepotType as $entrepot) {
@@ -533,8 +566,10 @@ class FieldCheck
          }
        }
        //Sinon on créée une alerte entrepot inconu et on return false
-       $warning = new Warnings;
-       $warning->insert('Ce code entrepot est inconu', $product_code, $field, $value);
+       if($activeProduct){
+         $warning = new Warnings;
+        $warning->insert('Ce code entrepot est inconu', $product_code, $field, $value);
+       }
        return false;
 
     }

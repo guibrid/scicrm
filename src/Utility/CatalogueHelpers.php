@@ -275,11 +275,17 @@ class CatalogueHelpers
       * Formatage du champs prix
       * @return string| Return le prix formaté
       */
-      public function formatPrix($prix,$entrepot,$articleremplacement)
+      public function formatPrix($prix,$entrepot,$articleremplacement,$typeExport)
       {
-        $listEntrepot = ['71744', '71746', '89063', '88642', '88884', '1'];
-        if(empty($prix) && !in_array($entrepot,$listEntrepot) && empty($articleremplacement)) {
-          $prix = 'Au cours';
+        if ($typeExport == 'catalogue') {
+          $listEntrepot = ['71744', '71746', '89063', '88642', '88884', '1'];
+          if(empty($prix) && !in_array($entrepot,$listEntrepot) && empty($articleremplacement)) {
+            $prix = 'Au cours';
+          }
+        } else if ($typeExport == 'boncommande') {
+          if(!empty($articleremplacement)) {
+            $prix = 0;
+          }
         }
         return $prix;
       }
@@ -346,14 +352,15 @@ class CatalogueHelpers
                 $productDetails->duree_vie, $this->formatDLV($productDetails->dlv),
                 $productDetails->title, $this->formatBrand($productDetails->Brands['title']),
                 $productDetails->pieceartk, $productDetails->pcb,
-                $this->formatPrix($productDetails->prix, $productDetails->entrepot, $productDetails->remplacement_product),
+                $this->formatPrix($productDetails->prix, $productDetails->entrepot, $productDetails->remplacement_product, 'catalogue'),
                 $productDetails->uv, '', '', '', '', $productDetails->poids, $productDetails->volume,
                 (int)$productDetails->couche_palette, (int)$productDetails->colis_palette,
                 (string)$productDetails->douanier,  $productDetails->qualification, $productDetails->gencod, ''];
             } else if ($type == 'boncommande') {
+              if ($productDetails->remplacement_product == 'Carrefour') { $productDetails->remplacement_product = ''; }
               $productRow = [
                 $productDetails->code , $productDetails->remplacement_product, $productDetails->title, $productDetails->pcb,
-                $this->formatPrix($productDetails->prix, $productDetails->entrepot, $productDetails->remplacement_product),
+                $this->formatPrix($productDetails->prix, $productDetails->entrepot, $productDetails->remplacement_product, 'boncommande'),
                 $productDetails->uv, $productDetails->poids,
                 $productDetails->volume, $this->formatDLV($productDetails->dlv),
                 $productDetails->duree_vie, $productDetails->gencod, (string)$productDetails->douanier, '',

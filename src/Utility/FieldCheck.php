@@ -607,7 +607,7 @@ class FieldCheck
      */
     public function checkDouanier($codeDouannier)
     {
-      if(!ctype_digit((string)$codeDouannier) || strlen($codeDouannier) !== 10 || $codeDouannier === '0000000000' || substr($codeDouannier, 1, 1) == 0) {
+      if(!ctype_digit((string)$codeDouannier) || strlen($codeDouannier) !== 10 || $codeDouannier === '0000000000' ||  substr($codeDouannier, 0, 2) == 00) {
         $codeDouannier = "";
       }
       return $codeDouannier;

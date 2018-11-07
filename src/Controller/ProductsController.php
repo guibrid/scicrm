@@ -222,6 +222,9 @@ class ProductsController extends AppController
                 $productRow = array_merge($product_id, $productRow); // On ajoute l'id à l'array du product
                 $updateProductList[$key] = $productRow;
                 }
+              } else {  // Si l'article est nouveau et inactif(avec un code de remplacement)
+                // On ajoute l'article inactif
+                $insertProductList[$key] = $productRow;
               }
 
             }

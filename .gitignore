@@ -6,6 +6,7 @@
 /tmp/*
 /vendor/*
 /webroot/files/*
+.htaccess
 
 # OS generated files #
 ######################

@@ -6,7 +6,7 @@
 
 AuthName "Page d'administration protégée"
 AuthType Basic
-AuthUserFile "C:/Users/dellxps/googledrive/dev/www/webaxis/scinternational/app/scicrm/.htpasswd"
+AuthUserFile "/home/worldli0/public_html/app/scinternational/scicrm/.htpasswd"
 Require valid-user
 
 <IfModule mod_rewrite.c>

@@ -192,7 +192,7 @@ class PhotosController extends AppController
         }
         $photos = $this->Photos->find()
                                ->where(['Photos.active ' => 0])
-                               ->limit(10)
+                               ->limit(50)
                                ->contain(['Products']);
         $this->set(compact('photos'));
  

@@ -7,6 +7,7 @@
 /vendor/*
 /webroot/files/*
 .htaccess
+.htpasswd
 
 # OS generated files #
 ######################

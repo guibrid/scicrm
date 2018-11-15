@@ -153,4 +153,50 @@ class PhotosController extends AppController
         debug('Importation terminée');
         die;
     }
+
+    /**
+     * Validate method
+     *
+     * 
+     */
+    public function validate()
+    {
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $datas = $this->request->getData();
+            //Liste des ids de produit
+            $product_ids = array_slice($datas, 0, true);
+            unset($datas['product_ids']);
+
+            foreach ($product_ids['product_ids'] as $key => $value) {
+                
+                if (array_key_exists($value, $datas)) {
+                    // Update
+                    $active = 1;
+                } else {
+                    //Delete
+                    $active = -1;
+                }
+
+                $query = $this->Photos->query();
+                $query->update()
+                ->set(['active' => $active])
+                ->where(['product_id' => $value])
+                ->execute();
+            }
+            //$photo = $this->Photos->patchEntity($photo, $this->request->getData());
+            if ( $query->update()->set(['active' => $active])->where(['product_id' => $value])->execute() ) {
+                $this->Flash->success(__('Validation effectué'));
+            } else {
+            $this->Flash->error(__('Problème de validation! Arrêtez tout et contactez Guigui!!!!!!!!'));
+            }
+        }
+        $photos = $this->Photos->find()
+                               ->where(['Photos.active ' => 0])
+                               ->limit(10)
+                               ->contain(['Products']);
+        $this->set(compact('photos'));
+ 
+
+
+    }
 }

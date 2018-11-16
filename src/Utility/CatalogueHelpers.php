@@ -345,10 +345,15 @@ class CatalogueHelpers
           */
           public function generateRow($productDetails, $type)
           {
+            if ( isset( $productDetails->photos[0]->url ) && $productDetails->photos[0]->active == 1){
+              $photo = $productDetails->photos[0]->url; 
+            } else {
+              $photo = '';
+            }
             // Information exporter pour chaque produit
             if ($type == 'catalogue') {
               $productRow = [
-                $productDetails->code , '', '', $this->formatNew($productDetails->new),
+                $productDetails->code , '', $photo, $this->formatNew($productDetails->new),
                 $productDetails->duree_vie, $this->formatDLV($productDetails->dlv),
                 $productDetails->title, $this->formatBrand($productDetails->Brands['title']),
                 $productDetails->pieceartk, $productDetails->pcb,

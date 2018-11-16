@@ -493,7 +493,7 @@ class ProductsController extends AppController
                     //Boucle des articles
                     $products = $this->Products->find('all')
                                                ->where(['Products.active =' => 1, 'Products.subcategory_id IN' => $subcat_ids])
-                                               ->contain(['origins','categories','subcategories','brands']);
+                                               ->contain(['origins','categories','subcategories','brands', 'Photos' ]);          
 
                     // On verifie si il y a des produits dans la sousCategorie  et que le type est catalogue
                     if($products->count()>0 && $type == 'catalogue') {

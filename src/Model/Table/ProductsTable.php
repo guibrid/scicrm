@@ -72,6 +72,7 @@ class ProductsTable extends Table
             'targetForeignKey' => 'shortorigin_id',
             'joinTable' => 'shortorigins_products'
         ]);
+        $this->hasMany('Photos');
     }
 
     // Dans une classe table ou behavior

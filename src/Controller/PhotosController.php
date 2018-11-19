@@ -171,7 +171,7 @@ class PhotosController extends AppController
                 
                 if (array_key_exists($value, $datas)) {
                     // Update
-                    $active = 1;
+                    $active = 2;
                 } else {
                     //Delete
                     $active = -1;
@@ -191,7 +191,7 @@ class PhotosController extends AppController
             }
         }
         $photos = $this->Photos->find()
-                               ->where(['Photos.active ' => 0])
+                               ->where(['Photos.active ' => 1])
                                ->limit(50)
                                ->contain(['Products']);
         $this->set(compact('photos'));

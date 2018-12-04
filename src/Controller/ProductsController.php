@@ -469,11 +469,13 @@ class ProductsController extends AppController
             }
 
             //Boucle des catégories
-            $categories = $categoriesList->find('all')->where(['store_id =' => $store->id]);
+            $categories = $categoriesList->find('all')->where(['store_id =' => $store->id])
+                                                      ->order(['code' => 'ASC']);
             foreach($categories as $category) {
 
                   //Boucle des sous catégories
-                  $subcategories = $subcategoriesList->find('all')->where(['category_id =' => $category->id]);
+                  $subcategories = $subcategoriesList->find('all')->where(['category_id =' => $category->id])
+                                                                  ->order(['code' => 'ASC']);
                   // Verification pour la subcat produits bio
                   $listProductAjouter = false;
                   foreach($subcategories as $subcategory) {

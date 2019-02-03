@@ -345,8 +345,12 @@ class CatalogueHelpers
           */
           public function generateRow($productDetails, $type)
           {
-            if ( isset( $productDetails->photos[0]->url ) && $productDetails->photos[0]->active == 1){
-              $photo = $productDetails->photos[0]->url; 
+            if ( isset( $productDetails->photos[0]->url ) && $productDetails->photos[0]->active != -1){
+              if (strlen($productDetails->photos[0]->url)< 25) {
+                $photo = 'https://sc-international.fr/products_photos/'.$productDetails->photos[0]->url;
+              } else {
+                $photo = $productDetails->photos[0]->url; 
+              }
             } else {
               $photo = '';
             }

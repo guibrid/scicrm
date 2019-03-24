@@ -199,4 +199,30 @@ class PhotosController extends AppController
 
 
     }
+
+    /**
+     * find method
+     * List all the 'new' product and search in google image api images
+     * donwload and save the google image selected as picture product
+     */
+    public function find()
+    {
+        if ($this->request->is(['post'])) {
+            // Gencod
+            // URL
+            // Product_id
+            $datas = $this->request->getData();
+            debug($datas);
+        }
+        // List all 'NEW' Product with no photo existing
+        $products = TableRegistry::get('Products');
+        $productQuery = $products->find('all')
+                                    ->where(['new =' => 1, 'Photos.product_id IS'=> null])
+                                    ->leftJoinWith('Photos')
+                                    ->limit(3)
+                                    ->contain('Photos');
+        
+        $this->set(compact('productQuery'));
+
+    }
 }

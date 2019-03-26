@@ -152,7 +152,7 @@ Find photos
   var gencod = <?php echo $product->gencod; ?>;
   var url = 'https://www.googleapis.com/customsearch/v1?q=' + gencod + '&cx=004174363264685956401:feculhur8rm&imgSize=medium&imgType=photo&searchType=image&num=4&key=AIzaSyDBXvQjtQUFM6I8cd2grlXO70a9Chss8jw';
   $.get( url, function( data ) {
-     Si des resultat sont trouvé
+     //Si des resultat sont trouvé
     if (data.queries.request[0].totalResults >0){
       
       var htmlText = '<div><table><tr>';

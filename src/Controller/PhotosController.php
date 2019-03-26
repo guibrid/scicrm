@@ -208,19 +208,42 @@ class PhotosController extends AppController
     public function find()
     {
         if ($this->request->is(['post'])) {
-            // Gencod
-            // URL
-            // Product_id
+            
             $datas = $this->request->getData();
-            debug($datas);
+
+            // Download image
+            // Rename and resize image
+            // upload on siteground serveur
+            // Save image data in photos table
+            $query = $this->Photos->query();
+            foreach ($datas['product'] as $key => $value) {
+
+                //Si une photo a ete selectionne
+                if(isset($value['url'])) {
+                    $photoData = ['url' => $value['url'],
+                                  'product_id' => $value['id'], 
+                                  'type' => 0, 
+                                  'active'=> 2];
+                } else {
+                    $photoData = ['url' => '-',
+                                  'product_id' => $value['id'], 
+                                  'type' => 0, 
+                                  'active'=> -1];
+                }
+                $query->insert(['url', 'product_id', 'type', 'active'])
+                      ->values($photoData);
+            }
+
+            $query->execute();
+         
         }
         // List all 'NEW' Product with no photo existing
         $products = TableRegistry::get('Products');
         $productQuery = $products->find('all')
                                     ->where(['new =' => 1, 'Photos.product_id IS'=> null])
                                     ->leftJoinWith('Photos')
-                                    ->limit(3)
-                                    ->contain('Photos');
+                                    ->limit(5)
+                                    ->contain(['Photos', 'Brands', 'Origins', 'Categories', 'Subcategories']);
         
         $this->set(compact('productQuery'));
 

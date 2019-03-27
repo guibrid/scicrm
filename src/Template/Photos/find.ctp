@@ -5,7 +5,7 @@ Find photos
   <table id="mytable">
   <?php foreach ($productQuery as $key => $product): ?>
   <tr><td id="product-<?php echo  $key; ?>">
-  <h5><?php echo  h($product->title); ?></h5>
+  <h5><?php echo  h($product->title); ?>|<?php echo  h($product->id); ?></h5>
   <p style="font-size:11px">
     <b>Marque:</b> <?php echo  h($product->brand->title); ?> | 
     <b>Gencod:</b> <?php echo  h($product->gencod); ?> | 

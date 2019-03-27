@@ -217,8 +217,7 @@ class PhotosController extends AppController
             // Save image data in photos table
             $query = $this->Photos->query();
             foreach ($datas['product'] as $key => $value) {
-
-                //Si une photo a ete selectionne
+                //Formatage des données pour l'insert/update
                 if(isset($value['url'])) {
                     $photoData = ['url' => $value['url'],
                                   'product_id' => $value['id'], 
@@ -230,22 +229,36 @@ class PhotosController extends AppController
                                   'type' => 0, 
                                   'active'=> -1];
                 }
-                $query->insert(['url', 'product_id', 'type', 'active'])
-                      ->values($photoData);
+
+                //Check si une photo existe
+                $nbrPhotos = $this->Photos->find()->where(['product_id' => $value['id']])->count();
+                //debug($nbrPhotos);
+                if($nbrPhotos === 0){ // Si aucun enregistrement n'hesite pour cette photo/produit on insert
+                    $query->insert(['url', 'product_id', 'type', 'active'])
+                          ->values($photoData);
+                } else {
+                    $query->update()
+                          ->set($photoData)
+                          ->where(['product_id' => $value['id']]); 
+                }
+
             }
 
             $query->execute();
+            
          
         }
         // List all 'NEW' Product with no photo existing
         $products = TableRegistry::get('Products');
         $productQuery = $products->find('all')
-                                    ->where(['new =' => 1, 'Photos.product_id IS'=> null])
+                                    ->where(['new' => 1, 'Products.active' => 1, 'Photos.product_id IS'=> null])
+                                    //         'OR' => [['Photos.product_id IS'=> null], ['Photos.url' => '-']]])
                                     ->leftJoinWith('Photos')
-                                    ->limit(5)
+                                    ->limit(1)
                                     ->contain(['Photos', 'Brands', 'Origins', 'Categories', 'Subcategories']);
         
         $this->set(compact('productQuery'));
 
     }
 }
+

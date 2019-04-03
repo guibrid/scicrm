@@ -218,8 +218,13 @@ class PhotosController extends AppController
             $query = $this->Photos->query();
             foreach ($datas['product'] as $key => $value) {
                 //Formatage des données pour l'insert/update
-                if(isset($value['url'])) {
-                    $photoData = ['url' => $value['url'],
+                if(isset($value['url']) || !empty($value['customLink'])) {
+                    if(isset($value['url'])) { 
+                        $url = $value['url'];
+                    } else {
+                        $url = $value['customLink'];
+                    }
+                    $photoData = ['url' => $url,
                                   'product_id' => $value['id'], 
                                   'type' => 0, 
                                   'active'=> 2];

@@ -3,6 +3,7 @@ Find photos
 
 <?= $this->Form->create() ?>
   <table id="mytable">
+  Left: <?php echo $productQuery->count(); ?>
   <?php foreach ($productQuery as $key => $product): ?>
   <tr><td id="product-<?php echo  $key; ?>">
   <h5><?php echo  h($product->title); ?>|<?php echo  h($product->id); ?></h5>
@@ -42,7 +43,16 @@ Find photos
 
 
   var gencod = <?php echo $product->gencod; ?>;
-  var url = 'https://www.googleapis.com/customsearch/v1?q=' + gencod + '&cx=004174363264685956401:feculhur8rm&imgType=photo&searchType=image&num=7&key=AIzaSyDBXvQjtQUFM6I8cd2grlXO70a9Chss8jw';
+  // SCI API
+  //var url = 'https://www.googleapis.com/customsearch/v1?q=' + gencod + '&cx=004174363264685956401:feculhur8rm&imgType=photo&searchType=image&num=7&key=AIzaSyDBXvQjtQUFM6I8cd2grlXO70a9Chss8jw';
+  // Nomshop API
+  //var url = 'https://www.googleapis.com/customsearch/v1?q=' + gencod + '&cx=004174363264685956401:feculhur8rm&imgType=photo&searchType=image&num=7&key=AIzaSyCy4br4q3EyT2lW6o60U1MRLh201eji_fk';
+  // PGl API
+  //var url = 'https://www.googleapis.com/customsearch/v1?q=' + gencod + '&cx=004174363264685956401:feculhur8rm&imgType=photo&searchType=image&num=7&key=AIzaSyDunOQztC4U0CSTqBtWbvn7H6agN3aa1c8';
+  // TSDistrib API
+  //var url = 'https://www.googleapis.com/customsearch/v1?q=' + gencod + '&cx=004174363264685956401:feculhur8rm&imgType=photo&searchType=image&num=7&key=AIzaSyDgGqKIFhzXy-w8-ehKgtEOg-0Jp1FE1XY';
+  // Cactus API
+  var url = 'https://www.googleapis.com/customsearch/v1?q=' + gencod + '&cx=004174363264685956401:feculhur8rm&imgType=photo&searchType=image&num=7&key=AIzaSyBtT1rrTjo0SspLK8WzRJoroTo8-vSuce8';
   $.get( url, function( data ) {
     console.log(data);
     //Si des resultat sont trouvé

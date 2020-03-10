@@ -1,5 +1,6 @@
 Find photos
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<?= $this->Html->script("googleapi"); ?>
 
 <?= $this->Form->create() ?>
   <table id="mytable">
@@ -43,16 +44,9 @@ Find photos
 
 
   var gencod = <?php echo $product->gencod; ?>;
-  // SCI API
-  //var url = 'https://www.googleapis.com/customsearch/v1?q=' + gencod + '&cx=004174363264685956401:feculhur8rm&imgType=photo&searchType=image&num=7&key=AIzaSyDBXvQjtQUFM6I8cd2grlXO70a9Chss8jw';
-  // Nomshop API
-  //var url = 'https://www.googleapis.com/customsearch/v1?q=' + gencod + '&cx=004174363264685956401:feculhur8rm&imgType=photo&searchType=image&num=7&key=AIzaSyCy4br4q3EyT2lW6o60U1MRLh201eji_fk';
-  // PGl API
-  //var url = 'https://www.googleapis.com/customsearch/v1?q=' + gencod + '&cx=004174363264685956401:feculhur8rm&imgType=photo&searchType=image&num=7&key=AIzaSyDunOQztC4U0CSTqBtWbvn7H6agN3aa1c8';
-  // TSDistrib API
-  //var url = 'https://www.googleapis.com/customsearch/v1?q=' + gencod + '&cx=004174363264685956401:feculhur8rm&imgType=photo&searchType=image&num=7&key=AIzaSyDgGqKIFhzXy-w8-ehKgtEOg-0Jp1FE1XY';
-  // Cactus API
-  var url = 'https://www.googleapis.com/customsearch/v1?q=' + gencod + '&cx=004174363264685956401:feculhur8rm&imgType=photo&searchType=image&num=7&key=AIzaSyBtT1rrTjo0SspLK8WzRJoroTo8-vSuce8';
+
+  var url = keygoogleapi;
+
   $.get( url, function( data ) {
     console.log(data);
     //Si des resultat sont trouvé

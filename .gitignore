@@ -6,6 +6,7 @@
 /tmp/*
 /vendor/*
 /webroot/files/*
+/webroot/js/googleapi.js
 .htaccess
 .htpasswd
 

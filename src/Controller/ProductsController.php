@@ -9,6 +9,8 @@ use Cake\ORM\TableRegistry;
 use App\Utility\FieldCheck;
 use App\Utility\CatalogueHelpers;
 
+use Cake\Database\Expression\QueryExpression;
+
 /**
  * Products Controller
  *
@@ -661,6 +663,53 @@ class ProductsController extends AppController
         }
       }
           debug('Mise à jour des marques OK');
+    }
+
+
+    /**
+     * deletedproducts method
+     * recherche des prorduits sur disparu dans la base sogedial et les passé en supprimé dans notre base
+     */
+    public function deletedproducts()
+    {
+
+      $csvFilePath = "files/test8.csv";
+      $csvNbrRows = count(file($csvFilePath));
+      $reader = ReaderFactory::create(Type::CSV); // for CSV files
+      $reader->setFieldDelimiter('|');
+      $reader->open($csvFilePath);
+
+      $productList = []; // array de tous les articles du fichier Sogedial
+      
+      foreach ($reader->getSheetIterator() as $sheet) {
+
+        foreach ($sheet->getRowIterator() as $key => $productRow) {
+          $productList[] = $productRow[0];
+        }
+
+      }
+
+      $reader->close();
+      //var_dump($productList);
+
+      // Get tous les codes article présent dans notre base et non présent dans la base Sogedial
+      // qui sont inactif et n'ont rien dans remplacement produit
+      $query = $this->Products->find();
+      $query->where(['code NOT IN' => $productList, 'remplacement_product' => '', 'active' => 0]);
+      $number = $query->count();
+      echo 'Nombre d\'articles manquant dans le catalogue';
+      var_dump($number);
+
+      /* UNCOMMENT pour update les produits manquant
+      
+      $query = $this->Products->query();
+      $query->update()
+      ->set(['remplacement_product ' => 'Supprime'])
+      ->where(['code NOT IN' => $productList, 'remplacement_product' => '', 'active' => 0])
+      ->execute();*/
+
+      die;
+      
     }
 
 }

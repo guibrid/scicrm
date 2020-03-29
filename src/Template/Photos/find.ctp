@@ -45,7 +45,7 @@ Find photos
 
   var gencod = <?php echo $product->gencod; ?>;
 
-  var url = keygoogleapi;
+  var url = 'https://www.googleapis.com/customsearch/v1?q=' + gencod + '&cx=004174363264685956401:feculhur8rm&imgType=photo&searchType=image&num=7&key=' + googleapikey;
 
   $.get( url, function( data ) {
     console.log(data);

@@ -697,8 +697,13 @@ class ProductsController extends AppController
       $query = $this->Products->find();
       $query->where(['code NOT IN' => $productList, 'remplacement_product' => '', 'active' => 0]);
       $number = $query->count();
-      echo 'Nombre d\'articles manquant dans le catalogue';
-      var_dump($number);
+
+      echo 'Nombre d\'articles manquant dans le catalogue: '.$number;
+      echo '<br /><br />Liste de codes articles:<br /><table> ';
+      foreach ($query as $data){
+        echo '<tr><td>'.$data->code.'</td><td>'.$data->title.'</td></tr>';
+      }
+      echo '</table>';
 
       /* UNCOMMENT pour update les produits manquant
       

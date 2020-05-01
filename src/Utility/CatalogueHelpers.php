@@ -250,9 +250,11 @@ class CatalogueHelpers
         //Ajout de la premiere lettre A, B, C, ...
         if($firstLetter != substr($subcategory['title'], 0, 1)){
           $firstLetter = substr($subcategory['title'], 0, 1);
-          $sommaire[] = [substr($subcategory['title'], 0, 1)];
+          //$sommaire[] = [substr($subcategory['title'], 0, 1)];
+          $sommaire[$subcategory["category"]['store_id']][] = [substr($subcategory['title'], 0, 1)];
         }
-        $sommaire[] = [$subcategory['title']];
+        //$sommaire[] = [$subcategory['title']];
+        $sommaire[$subcategory["category"]['store_id']][] = [$subcategory['title']];
       }
       return $sommaire;
     }

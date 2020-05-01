@@ -423,10 +423,21 @@ class ProductsController extends AppController
         $writer->addRows($catalogueHelpers->generateGarde());
 
         // Créé la feuille Sommaire
+        $sommaireArrays = $catalogueHelpers->generateSommaire();
         $newSheet = $writer->addNewSheetAndMakeItCurrent();
         $sheet = $writer->getCurrentSheet();
-        $sheet->setName('Sommaire');
-        $writer->addRows($catalogueHelpers->generateSommaire());
+        $sheet->setName('ÉPICERIE,LIQUIDE,DPH,BAZAR');
+        $writer->addRows($sommaireArrays[1]);
+
+        $newSheet = $writer->addNewSheetAndMakeItCurrent();
+        $sheet = $writer->getCurrentSheet();
+        $sheet->setName('SURGELES');
+        $writer->addRows($sommaireArrays[2]);
+
+        $newSheet = $writer->addNewSheetAndMakeItCurrent();
+        $sheet = $writer->getCurrentSheet();
+        $sheet->setName('FRAIS, ULTRA FRAIS');
+        $writer->addRows($sommaireArrays[3]);
       }
 
       //Si c'est un catalogue on genere le sommaire

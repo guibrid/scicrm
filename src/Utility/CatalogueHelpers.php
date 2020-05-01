@@ -256,6 +256,11 @@ class CatalogueHelpers
         //$sommaire[] = [$subcategory['title']];
         $sommaire[$subcategory["category"]['store_id']][] = [$subcategory['title']];
       }
+      //Dédoublonner les listes de sousfamilles;
+      $sommaire[1] = array_map("unserialize", array_unique(array_map("serialize", $sommaire[1])));
+      $sommaire[2] = array_map("unserialize", array_unique(array_map("serialize", $sommaire[1])));
+      $sommaire[3] = array_map("unserialize", array_unique(array_map("serialize", $sommaire[1])));
+
       return $sommaire;
     }
 

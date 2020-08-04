@@ -728,4 +728,33 @@ class ProductsController extends AppController
       
     }
 
+    /**
+     * CheckReplaceProduct method
+     * Check si les codes articles de remplacement existent bien dans la colonne article. 
+     * Si existe pas mettre "supprimer" dans article de remplacement à la place du code erroné et inactive.
+     */
+    public function CheckReplaceProduct()
+    {
+
+      $query = $this->Products->find();
+      foreach ($query as $data){
+
+        if( $data->remplacement_product != ''){
+          if ( $data->remplacement_product != 'Supprime' && $data->remplacement_product != 'NPC') {
+            
+                $check = $this->Products->find()
+                ->where(['code' => $data->remplacement_product])->count();
+                if ($check != 1){
+                  echo "'".$data->code."',";
+                }
+                
+          }
+        }
+      
+      }
+
+      die;
+      
+    }
+
 }

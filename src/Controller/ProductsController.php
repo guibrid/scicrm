@@ -757,4 +757,77 @@ class ProductsController extends AppController
       
     }
 
+    /**
+     * importDouaneCode method
+     * Mets à jour les codes douanes des articles avec les factures csv 
+     * Facture.csv avec 2 colonnes "code article" et "code douane"
+     */
+    public function importDouaneCode()
+    {
+      $dir   = 'files/invoice_for_douane_code_import/';
+      $files = scandir( $dir );
+
+      foreach($files as $file) {
+ 
+        if (strpos($file, '.csv')) {
+
+          //echo '<h1>'.$file.'</h1>';
+
+          $csvFilePath = "files/invoice_for_douane_code_import/".$file;
+          $csvNbrRows = count(file($csvFilePath));
+          $reader = ReaderFactory::create(Type::CSV); // for CSV files
+          $reader->setFieldDelimiter('|');
+          $reader->open($csvFilePath);
+    
+          $productList = []; // array de tous les articles du fichier Sogedial
+          
+          foreach ($reader->getSheetIterator() as $sheet) {
+    
+            foreach ($sheet->getRowIterator() as $key => $productRow) {
+              if( empty($productRow[1]) || $productRow[1]==0 || empty($productRow[0]) ) {
+                //echo '<p style="color:red">'.$productRow[0].' - '.$productRow[1].'</p>';
+              } else {
+
+                $existe = $this->Products->find()
+                ->where(['code' => $productRow[0]])->count();
+
+                if ($existe > 0) {
+
+                  $check = $this->Products->find()
+                  ->where(['douanier' => $productRow[1], 'code' => $productRow[0]])->count();
+                  if ($check == 0) {
+                    echo "<p> // UPDATE products SET `douanier`='".$productRow[1]."' WHERE `code`='".$productRow[0]."';<p>";
+                    $query = $this->Products->query();
+                    $query->update()
+                    ->set(['douanier  ' => $productRow[1]])
+                    ->where(['code' => $productRow[0]])
+                    ->execute();
+                  }
+
+                }
+
+
+              }
+
+
+
+
+
+
+
+            }
+    
+          }
+
+          $reader->close();
+
+        }
+
+      }
+
+ 
+      die;
+    }
+
+
 }

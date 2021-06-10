@@ -605,10 +605,19 @@ class FieldCheck
      * @param string| $codeDouannier = code douanier
      * @return string| return le code douanier
      */
-    public function checkDouanier($codeDouannier)
+    public function checkDouanier($codeDouannier, $codeArticle)
     {
-      if(!ctype_digit((string)$codeDouannier) || strlen($codeDouannier) !== 10 || $codeDouannier === '0000000000' ||  substr($codeDouannier, 0, 2) == 00) {
-        $codeDouannier = "";
+
+      if(!ctype_digit((string)$codeDouannier) || strlen($codeDouannier) !== 10 || $codeDouannier === '0000000000' ||  substr($codeDouannier, 0, 2) == 00) { // check si le code du csv est conforme
+
+        $product =  TableRegistry::get('products')->find()->where(['code =' => $codeArticle])->first();
+
+        if (ctype_digit((string)$product->douanier) && strlen($product->douanier) == 10 && $product->douanier !== '0000000000' && substr($product->douanier, 0, 2) != 00) {  // check si le code de la base est conforme on le garde
+          $codeDouannier = $product->douanier;
+        } else {
+          $codeDouannier = "";
+        }
+
       }
       return $codeDouannier;
     }

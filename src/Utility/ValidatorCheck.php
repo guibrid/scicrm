@@ -171,7 +171,7 @@ public function validate($data) {
         $data['douanier'] = $fieldCheck->sanitizeData($data['douanier']); //Supprimer espace avant et après la chaine
 
           // Entier, 10 chiffres autre que 0000000000 sinon on met à blanc
-          $data['douanier'] = $fieldCheck->checkDouanier($data['douanier']); //Vérifier le format du code douanier
+          $data['douanier'] = $fieldCheck->checkDouanier($data['douanier'], $data['code']); //Vérifier le format du code douanier
 
         break;
 

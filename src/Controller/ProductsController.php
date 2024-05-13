@@ -716,13 +716,13 @@ class ProductsController extends AppController
       }
       echo '</table>';
 
-      /* UNCOMMENT pour update les produits manquant
+      /* UNCOMMENT pour update les produits manquant*/
       
       $query = $this->Products->query();
       $query->update()
       ->set(['remplacement_product ' => 'Supprime'])
       ->where(['code NOT IN' => $productList, 'remplacement_product' => '', 'active' => 0])
-      ->execute();*/
+      ->execute();
 
       die;
       

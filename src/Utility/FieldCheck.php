@@ -320,10 +320,10 @@ class FieldCheck
         //Verifier dans la table subcategories que le code subcategory existe
         $subcategorySearch = TableRegistry::get('subcategories');
         $subcategory = $subcategorySearch->find()
-                                         ->where(['Subcategories.code =' => $value]);
+                                         ->where(['subcategories.code =' => $value]);
 
         //Et on ne fait resortir que la subcategory qui match avec le type(1AL,2AL,..) de categorie associé
-        $subcategory->matching('Categories',
+        $subcategory->matching('categories',
                                 function ($q) use ($typeList) {
                                      return $q->where(['OR' => $typeList]);
                                  });

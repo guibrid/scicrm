@@ -1,0 +1,66 @@
+version: "3.7"
+services:
+  scicrm:
+    build:
+      args:
+        user: defaultuser
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    container_name: sci-crm-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    networks:
+      - scicrmNetwork
+
+  db:
+    image: 'mysql:5.7.24'
+    container_name: scicrm-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: cake_crmsci
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_PASSWORD: secret
+      MYSQL_USER: scicrmuser
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - my-datavolume:/var/lib/mysql
+    networks:
+      - scicrmNetwork
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: unless-stopped
+    container_name: scicrm-phpmyadmin
+    depends_on:
+      - db
+    environment:
+      - UPLOAD_LIMIT=512M
+    ports:
+      - "8061:80"
+    networks:
+      - scicrmNetwork
+    volumes:
+      - /docker-compose/phpmyadmin
+
+  nginx:
+    image: nginx:alpine
+    container_name: scicrm-nginx
+    restart: unless-stopped
+    ports:
+      - 8060:80
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d/
+    networks:
+      - scicrmNetwork
+
+networks:
+  scicrmNetwork:
+    driver: bridge
+
+volumes:
+  my-datavolume:
